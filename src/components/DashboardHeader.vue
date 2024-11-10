@@ -1,14 +1,39 @@
 <template>
-  <v-app-bar app>
-    <v-toolbar-title>My Vue Dashboard</v-toolbar-title>
-    <!-- Add other toolbar content here, like buttons or menus -->
+  <v-app-bar color="primary" dark>
+    <v-container fluid>
+      <v-row class="d-flex justify-space-between align-center">
+        <v-col>
+          <v-toolbar-title>Dashboard</v-toolbar-title>
+        </v-col>
+        <v-col class="d-flex justify-end align-center">
+          <v-select
+            v-model="selectedOrganization"
+            :items="organizations"
+            label="Select Organisation"
+            outlined
+            dense
+          />
+          <v-btn icon>
+            <v-icon>mdi-account</v-icon>
+          </v-btn>
+        </v-col>
+      </v-row>
+    </v-container>
   </v-app-bar>
 </template>
 
-<script setup>
-// Any logic for the header can go here
+<script>
+export default {
+  name: 'DashboardHeader',
+  data() {
+    return {
+      selectedOrganization: null,
+      organizations: ['Organisation 1', 'Organisation 2', 'Organisation 3'], // Example options
+    };
+  },
+};
 </script>
 
 <style scoped>
-/* Add any specific styles for the header */
+/* No additional Tailwind styles, use Vuetify's default styling */
 </style>

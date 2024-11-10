@@ -154,9 +154,87 @@ const deleteChart = (item) => {
   saveLayout(layout.value)
 }
 
-// Rest of the functions remain the same...
-// [Previous functions: saveLayout, loadSavedLayout, validateLayout,
-// onLayoutUpdated, onResizeStart, onResizeEnd, onResize, onDragEnd]
+
+// Watch for layout changes and save them
+watch(
+  layout,
+  (newLayout) => {
+    if (!isResizing.value && !isDragging.value) {
+      saveLayout(newLayout)
+    }
+  },
+  { deep: true }
+)
+
+onMounted(() => {
+  loadSavedLayout()
+})
+
+function saveLayout(newLayout) {
+  if (!newLayout || !Array.isArray(newLayout)) {
+    console.error('Invalid layout data')
+    return
+  }
+
+  const validatedLayout = validateLayout(newLayout)
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(validatedLayout))
+    console.log('Layout saved successfully:', validatedLayout)
+  } catch (error) {
+    console.error('Error saving layout:', error)
+  }
+}
+
+function loadSavedLayout() {
+  try {
+    const savedLayout = localStorage.getItem(STORAGE_KEY)
+    if (savedLayout) {
+      const parsedLayout = JSON.parse(savedLayout)
+      layout.value = validateLayout(parsedLayout)
+      console.log('Layout loaded successfully:', layout.value)
+    } else {
+      console.log('No saved layout found, using default')
+      layout.value = defaultLayout
+    }
+  } catch (error) {
+    console.error('Error loading layout:', error)
+    layout.value = defaultLayout
+  }
+}
+
+function validateLayout(layoutData) {
+  return layoutData.map(item => ({
+    i: item.i || '',
+    x: Number.isInteger(item.x) ? item.x : 0,
+    y: Number.isInteger(item.y) ? item.y : 0,
+    w: Number.isInteger(item.w) ? Math.max(item.w, 1) : 4,
+    h: Number.isInteger(item.h) ? Math.max(item.h, 1) : 2,
+  }))
+}
+
+function onLayoutUpdated(newLayout) {
+  if (!isResizing.value && !isDragging.value) {
+    layout.value = validateLayout(newLayout)
+  }
+}
+
+function onResizeStart() {
+  isResizing.value = true
+}
+
+function onResizeEnd(layout) {
+  isResizing.value = false
+  saveLayout(layout)
+}
+
+function onResize(item, newLayout) {
+  layout.value = validateLayout(newLayout)
+}
+
+function onDragEnd(layout) {
+  isDragging.value = false
+  saveLayout(layout)
+}
 
 </script>
 
