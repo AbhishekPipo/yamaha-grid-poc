@@ -1,35 +1,38 @@
 <template>
-  <v-container fluid>
-    <grid-layout
-      :layout="layout"
-      :col-num="12"
-      :row-height="50"
-      :is-draggable="true"
-      :is-resizable="true"
-      :vertical-compact="true"
-      :margin="[10, 10]"
-    >
-      <grid-item
-        v-for="item in layout"
-        :key="item.i"
-        :x="item.x"
-        :y="item.y"
-        :w="item.w"
-        :h="item.h"
-        :i="item.i"
+  <DashboardLayoutWrapper>
+    <v-container fluid>
+      <grid-layout
+        :layout="layout"
+        :col-num="12"
+        :row-height="50"
+        :is-draggable="true"
+        :is-resizable="true"
+        :vertical-compact="true"
+        :margin="[10, 10]"
       >
-        <v-card>
-          <v-card-title>{{ item.i }}</v-card-title>
-          <v-card-text>Content for {{ item.i }}</v-card-text>
-        </v-card>
-      </grid-item>
-    </grid-layout>
-  </v-container>
+        <grid-item
+          v-for="item in layout"
+          :key="item.i"
+          :x="item.x"
+          :y="item.y"
+          :w="item.w"
+          :h="item.h"
+          :i="item.i"
+        >
+          <v-card>
+            <v-card-title>{{ item.i }}</v-card-title>
+            <v-card-text>Content for {{ item.i }}</v-card-text>
+          </v-card>
+        </grid-item>
+      </grid-layout>
+    </v-container>
+  </DashboardLayoutWrapper>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { GridLayout, GridItem } from 'vue-grid-layout-v3'
+import DashboardLayoutWrapper from '@/layouts/DashboardLayoutWrapper.vue'
 
 const layout = ref([
   { i: 'Card 1', x: 0, y: 0, w: 4, h: 2 },
