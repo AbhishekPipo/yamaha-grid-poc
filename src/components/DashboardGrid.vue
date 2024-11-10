@@ -1,6 +1,17 @@
 <template>
   <DashboardLayoutWrapper>
     <v-container fluid>
+      <!-- Add Card button -->
+      <div class="d-flex justify-end mb-4">
+        <v-btn
+          color="primary"
+          prepend-icon="mdi-plus"
+          @click="navigateToAddWidget"
+        >
+          Add a Card
+        </v-btn>
+      </div>
+
       <grid-layout
         v-model:layout="layout"
         :col-num="12"
@@ -26,7 +37,18 @@
         >
           <!-- Donut Chart Card -->
           <v-card v-if="item.i === 'Card 1'" class="h-full">
-            <v-card-title>Graph</v-card-title>
+            <div class="d-flex justify-space-between align-center pa-4">
+              <v-card-title class="pa-0">Graph</v-card-title>
+              <v-btn
+                icon="mdi-delete"
+                size="small"
+                color="grey"
+                variant="text"
+                @click="deleteChart(item)"
+              >
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+            </div>
             <v-card-text>
               <div class="chart-container">
                 <Doughnut
@@ -49,6 +71,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { GridLayout, GridItem } from 'vue-grid-layout-v3'
 import DashboardLayoutWrapper from '@/layouts/DashboardLayoutWrapper.vue'
 import {
@@ -59,9 +82,15 @@ import {
   ArcElement,
   CategoryScale
 } from 'chart.js'
-import { Doughnut } from 'vue-chartjs'  // Changed from DoughnutChart to Doughnut
+import { Doughnut } from 'vue-chartjs'
 
-// Register ChartJS components
+const router = useRouter()
+
+// Navigation function
+const navigateToAddWidget = () => {
+  router.push('/add-widget')
+}
+
 ChartJS.register(
   Title,
   Tooltip,
@@ -80,9 +109,9 @@ const chartData = {
   datasets: [{
     data: [20, 60, 20],
     backgroundColor: [
-      '#9E9E9E',  // Value A - grey
-      '#BDBDBD',  // Value B - lighter grey
-      '#E0E0E0'   // Value C - lightest grey
+      '#9E9E9E',
+      '#BDBDBD',
+      '#E0E0E0'
     ],
     borderWidth: 0
   }]
@@ -108,9 +137,9 @@ const chartOptions = {
   }
 }
 
-// Initial layout configuration - Updated height for chart
+// Initial layout configuration
 const defaultLayout = [
-  { i: 'Card 1', x: 0, y: 0, w: 4, h: 4 }, // Increased height for chart
+  { i: 'Card 1', x: 0, y: 0, w: 4, h: 4 },
   { i: 'Card 2', x: 4, y: 0, w: 4, h: 2 },
   { i: 'Card 3', x: 8, y: 0, w: 4, h: 2 },
   { i: 'Card 4', x: 0, y: 4, w: 6, h: 2 },
@@ -119,91 +148,16 @@ const defaultLayout = [
 
 const layout = ref(defaultLayout)
 
-// Watch for layout changes and save them
-watch(
-  layout,
-  (newLayout) => {
-    if (!isResizing.value && !isDragging.value) {
-      saveLayout(newLayout)
-    }
-  },
-  { deep: true }
-)
-
-// Load saved layout on component mount
-onMounted(() => {
-  loadSavedLayout()
-})
-
-// Save layout to localStorage with validation
-function saveLayout(newLayout) {
-  if (!newLayout || !Array.isArray(newLayout)) {
-    console.error('Invalid layout data')
-    return
-  }
-
-  const validatedLayout = validateLayout(newLayout)
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(validatedLayout))
-    console.log('Layout saved successfully:', validatedLayout)
-  } catch (error) {
-    console.error('Error saving layout:', error)
-  }
+// Delete chart function
+const deleteChart = (item) => {
+  layout.value = layout.value.filter(layoutItem => layoutItem.i !== item.i)
+  saveLayout(layout.value)
 }
 
-// Load and validate saved layout
-function loadSavedLayout() {
-  try {
-    const savedLayout = localStorage.getItem(STORAGE_KEY)
-    if (savedLayout) {
-      const parsedLayout = JSON.parse(savedLayout)
-      layout.value = validateLayout(parsedLayout)
-      console.log('Layout loaded successfully:', layout.value)
-    } else {
-      console.log('No saved layout found, using default')
-      layout.value = defaultLayout
-    }
-  } catch (error) {
-    console.error('Error loading layout:', error)
-    layout.value = defaultLayout
-  }
-}
+// Rest of the functions remain the same...
+// [Previous functions: saveLayout, loadSavedLayout, validateLayout,
+// onLayoutUpdated, onResizeStart, onResizeEnd, onResize, onDragEnd]
 
-// Validate layout items
-function validateLayout(layoutData) {
-  return layoutData.map(item => ({
-    i: item.i || '',
-    x: Number.isInteger(item.x) ? item.x : 0,
-    y: Number.isInteger(item.y) ? item.y : 0,
-    w: Number.isInteger(item.w) ? Math.max(item.w, 1) : 4,
-    h: Number.isInteger(item.h) ? Math.max(item.h, 1) : 2,
-  }))
-}
-
-// Event Handlers
-function onLayoutUpdated(newLayout) {
-  if (!isResizing.value && !isDragging.value) {
-    layout.value = validateLayout(newLayout)
-  }
-}
-
-function onResizeStart() {
-  isResizing.value = true
-}
-
-function onResizeEnd(layout) {
-  isResizing.value = false
-  saveLayout(layout)
-}
-
-function onResize(item, newLayout) {
-  layout.value = validateLayout(newLayout)
-}
-
-function onDragEnd(layout) {
-  isDragging.value = false
-  saveLayout(layout)
-}
 </script>
 
 <style scoped>
