@@ -12,7 +12,7 @@
             label="Select Organisation"
             outlined
             dense
-            class="mx-4"
+            class="mx-4 rounded-select"
             :menu-props="{ maxHeight: '400' }"
           />
           <v-btn icon @click="openProfileMenu">
@@ -71,7 +71,25 @@ export default {
   color: #1976d2; /* Primary blue for text */
 }
 
-.v-select .v-input__control {
-  border-radius: 20px;
+/* Custom CSS for rounded v-select */
+.rounded-select .v-select__control {
+  border-radius: 30px !important; /* Apply border-radius to the control */
+  border: 1px solid #ccc !important; /* Optional: add border to match Vuetify's outlined style */
+}
+
+/* Custom CSS for the dropdown items */
+.rounded-select .v-select__menu {
+  border-radius: 20px; /* Round the dropdown */
+}
+
+.rounded-select .v-select__input {
+  border-radius: 30px !important; /* Round the input part */
+  padding: 8px 16px; /* Optional: adjust padding inside the input */
+}
+
+/* Ensure the text is visible and no internal padding is added */
+.rounded-select .v-select__selections {
+  padding: 8px 16px;
+  border-radius: 30px !important; /* Ensure selections are rounded */
 }
 </style>
