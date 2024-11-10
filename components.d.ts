@@ -7,6 +7,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AddWidget: typeof import('./src/components/AddWidget.vue')['default']
     AppFooter: typeof import('./src/components/AppFooter.vue')['default']
     DashboardGrid: typeof import('./src/components/DashboardGrid.vue')['default']
     DashboardHeader: typeof import('./src/components/DashboardHeader.vue')['default']
