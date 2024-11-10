@@ -1,13 +1,14 @@
 <template>
   <DashboardLayoutWrapper>
-    <v-container fluid>
+    <!-- Parent Container with Gradient Background -->
+    <v-container fluid class="gradient-background">
       <!-- Add Card button -->
       <div class="d-flex justify-end mb-4">
         <v-btn
-          class="add-card-btn"
           color="primary"
           prepend-icon="mdi-plus"
           @click="navigateToAddWidget"
+          class="add-card-btn"
         >
           Add a Card
         </v-btn>
@@ -35,11 +36,10 @@
           :y="item.y"
           :w="item.w"
           :h="item.h"
-          class="grid-item"
         >
           <!-- Donut Chart Card -->
-          <v-card v-if="item.i === 'Card 1'" class="chart-card h-full">
-            <div class="d-flex justify-space-between align-center pa-4 card-header">
+          <v-card v-if="item.i === 'Card 1'" class="h-full card-gradient">
+            <div class="d-flex justify-space-between align-center pa-4">
               <v-card-title class="pa-0">Graph</v-card-title>
               <v-btn
                 icon="mdi-delete"
@@ -47,7 +47,6 @@
                 color="grey"
                 variant="text"
                 @click="deleteChart(item)"
-                class="delete-btn"
               >
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
@@ -62,9 +61,9 @@
             </v-card-text>
           </v-card>
           <!-- Default Card -->
-          <v-card v-else class="default-card h-full">
-            <v-card-title class="default-card-title">{{ item.i }}</v-card-title>
-            <v-card-text class="default-card-content">Content for {{ item.i }}</v-card-text>
+          <v-card v-else class="h-full card-gradient">
+            <v-card-title>{{ item.i }}</v-card-title>
+            <v-card-text>Content for {{ item.i }}</v-card-text>
           </v-card>
         </grid-item>
       </grid-layout>
@@ -89,23 +88,34 @@ import { Doughnut } from 'vue-chartjs'
 
 const router = useRouter()
 
+// Navigation function
 const navigateToAddWidget = () => {
   router.push('/add-widget')
 }
 
-ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale)
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  CategoryScale
+)
 
 const STORAGE_KEY = 'dashboard-grid-layout'
 const isResizing = ref(false)
 const isDragging = ref(false)
 
+// Chart configuration
 const chartData = {
   labels: ['Value A', 'Value B', 'Value C'],
   datasets: [{
     data: [20, 60, 20],
-    backgroundColor: ['#2196F3', '#8BC34A', '#FFC107'],
-    borderColor: '#fff',
-    borderWidth: 2,
+    backgroundColor: [
+      '#FF6384',  // Full color palette for a vibrant look
+      '#36A2EB',
+      '#FFCE56'
+    ],
+    borderWidth: 0
   }]
 }
 
@@ -129,6 +139,7 @@ const chartOptions = {
   }
 }
 
+// Initial layout configuration
 const defaultLayout = [
   { i: 'Card 1', x: 0, y: 0, w: 4, h: 4 },
   { i: 'Card 2', x: 4, y: 0, w: 4, h: 2 },
@@ -139,21 +150,37 @@ const defaultLayout = [
 
 const layout = ref(defaultLayout)
 
+// Delete chart function
 const deleteChart = (item) => {
   layout.value = layout.value.filter(layoutItem => layoutItem.i !== item.i)
   saveLayout(layout.value)
 }
 
-watch(layout, (newLayout) => {
-  if (!isResizing.value && !isDragging.value) saveLayout(newLayout)
-}, { deep: true })
+// Watch for layout changes and save them
+watch(
+  layout,
+  (newLayout) => {
+    if (!isResizing.value && !isDragging.value) {
+      saveLayout(newLayout)
+    }
+  },
+  { deep: true }
+)
 
-onMounted(() => loadSavedLayout())
+onMounted(() => {
+  loadSavedLayout()
+})
 
 function saveLayout(newLayout) {
+  if (!newLayout || !Array.isArray(newLayout)) {
+    console.error('Invalid layout data')
+    return
+  }
+
   const validatedLayout = validateLayout(newLayout)
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(validatedLayout))
+    console.log('Layout saved successfully:', validatedLayout)
   } catch (error) {
     console.error('Error saving layout:', error)
   }
@@ -162,8 +189,16 @@ function saveLayout(newLayout) {
 function loadSavedLayout() {
   try {
     const savedLayout = localStorage.getItem(STORAGE_KEY)
-    if (savedLayout) layout.value = validateLayout(JSON.parse(savedLayout))
+    if (savedLayout) {
+      const parsedLayout = JSON.parse(savedLayout)
+      layout.value = validateLayout(parsedLayout)
+      console.log('Layout loaded successfully:', layout.value)
+    } else {
+      console.log('No saved layout found, using default')
+      layout.value = defaultLayout
+    }
   } catch (error) {
+    console.error('Error loading layout:', error)
     layout.value = defaultLayout
   }
 }
@@ -173,13 +208,15 @@ function validateLayout(layoutData) {
     i: item.i || '',
     x: Number.isInteger(item.x) ? item.x : 0,
     y: Number.isInteger(item.y) ? item.y : 0,
-    w: Math.max(item.w, 1),
-    h: Math.max(item.h, 1),
+    w: Number.isInteger(item.w) ? Math.max(item.w, 1) : 4,
+    h: Number.isInteger(item.h) ? Math.max(item.h, 1) : 2,
   }))
 }
 
 function onLayoutUpdated(newLayout) {
-  if (!isResizing.value && !isDragging.value) layout.value = validateLayout(newLayout)
+  if (!isResizing.value && !isDragging.value) {
+    layout.value = validateLayout(newLayout)
+  }
 }
 
 function onResizeStart() {
@@ -199,65 +236,48 @@ function onDragEnd(layout) {
   isDragging.value = false
   saveLayout(layout)
 }
-
 </script>
 
 <style scoped>
-.add-card-btn {
-  background: linear-gradient(to right, #2196F3, #21CBF3);
-  color: white;
-  border-radius: 12px;
-  transition: transform 0.2s ease;
-}
-.add-card-btn:hover {
-  transform: scale(1.05);
-}
-
-.grid-item {
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+/* Apply the gradient background to the parent container */
+.gradient-background {
   background: linear-gradient(to right, #F5F7FA, #ECEFF1);
-  border-radius: 16px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-
-}
-.grid-item:hover {
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-  transform: scale(1.01);
+  min-height: 100vh;  /* Ensure the gradient fills the whole screen */
+  padding: 20px;
 }
 
-.chart-card,
-.default-card {
+/* Apply gradient background to the v-card */
+.card-gradient {
   background: linear-gradient(to right, #F5F7FA, #ECEFF1);
+  height: 100%;
+  width: 100%;
 }
 
-.chart-card .card-header {
-  border-bottom: 1px solid #E0E0E0;
-}
-
-.default-card-title {
-  font-weight: bold;
-  font-size: 1.2rem;
-}
-
-.delete-btn {
-  transition: color 0.2s ease;
-}
-.delete-btn:hover {
-  color: #f44336;
-}
-
+/* Customize the chart container */
 .chart-container {
   position: relative;
-  height: calc(100% - 48px);
+  height: calc(100% - 48px); /* Adjust to leave space for card title */
   width: 100%;
   margin: 0 auto;
 }
 
-.v-card {
-  padding: 12px;
-  transition: transform 0.2s ease-in-out;
+/* Style for the Add Card button */
+.add-card-btn {
+  background-color: #6200EE; /* Vibrant purple */
+  color: white;
+  border-radius: 24px;
+  padding: 12px 24px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
-.v-card:hover {
-  transform: translateY(-5px);
+
+.add-card-btn:hover {
+  background-color: #3700B3; /* Darker shade on hover */
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.add-card-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(98, 0, 238, 0.5);
 }
 </style>
