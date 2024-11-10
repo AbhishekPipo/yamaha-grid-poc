@@ -15,7 +15,12 @@
       <v-divider class="my-4"></v-divider>
 
       <v-list dense nav>
-        <v-list-item link class="sidebar-item">
+        <!-- Dashboard Item -->
+        <v-list-item
+          link
+          class="sidebar-item"
+          @click="navigateToDashboard"
+          :class="{'active': isActive('/')}">
           <v-list-item-icon>
             <v-icon>mdi-view-dashboard</v-icon>
           </v-list-item-icon>
@@ -24,7 +29,12 @@
           </v-list-item-content>
         </v-list-item>
 
-        <v-list-item link class="sidebar-item">
+        <!-- Projects Item -->
+        <v-list-item
+          link
+          class="sidebar-item"
+          @click="navigateToProjects"
+          :class="{'active': isActive('/projects')}">
           <v-list-item-icon>
             <v-icon>mdi-clipboard-text</v-icon>
           </v-list-item-icon>
@@ -33,12 +43,31 @@
           </v-list-item-content>
         </v-list-item>
 
-        <v-list-item link class="sidebar-item">
+        <!-- Settings Item -->
+        <v-list-item
+          link
+          class="sidebar-item"
+          @click="navigateToSettings"
+          :class="{'active': isActive('/settings')}">
           <v-list-item-icon>
             <v-icon>mdi-account-settings</v-icon>
           </v-list-item-icon>
           <v-list-item-content>
             <v-list-item-title class="text-white">Settings</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <!-- Widgets Item -->
+        <v-list-item
+          link
+          class="sidebar-item"
+          @click="navigateToWidgets"
+          :class="{'active': isActive('/add-widget')}">
+          <v-list-item-icon>
+            <v-icon>mdi-grid</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title class="text-white">Widgets</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -49,6 +78,26 @@
 <script>
 export default {
   name: 'DashboardSidebar',
+  methods: {
+    // Method to navigate to the Widgets page
+    navigateToWidgets() {
+      this.$router.push('/add-widget');
+    },
+    // Methods for other navigation items
+    navigateToDashboard() {
+      this.$router.push('/');
+    },
+    navigateToProjects() {
+      this.$router.push('/projects');
+    },
+    navigateToSettings() {
+      this.$router.push('/settings');
+    },
+    // Check if the current route matches the given path
+    isActive(path) {
+      return this.$route.path === path;
+    }
+  }
 };
 </script>
 
@@ -83,5 +132,10 @@ export default {
 .sidebar-item v-list-item-content {
   display: flex;
   align-items: center;
+}
+
+/* Highlight active tab */
+.sidebar-item.active {
+  background-color: rgba(255, 255, 255, 0.1); /* Highlighted background */
 }
 </style>

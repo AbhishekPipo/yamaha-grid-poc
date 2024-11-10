@@ -3,10 +3,15 @@
     <v-container fluid>
       <v-row class="d-flex justify-space-between align-center">
         <v-col>
-          <v-toolbar-title class="text-h5 font-weight-bold text-primary">Dashboard</v-toolbar-title>
+          <!-- Conditionally render title based on route -->
+          <v-toolbar-title class="text-h5 font-weight-bold text-primary">
+            {{ headerTitle }}
+          </v-toolbar-title>
         </v-col>
         <v-col class="d-flex justify-end align-center">
+          <!-- Conditionally render the Select Organisation dropdown based on the current route -->
           <v-select
+            v-if="!isAddWidgetRoute"
             v-model="selectedOrganization"
             :items="organizations"
             label="Select Organisation"
@@ -52,6 +57,25 @@ export default {
       organizations: ['Organisation 1', 'Organisation 2', 'Organisation 3'],
       profileMenu: false,
     };
+  },
+  computed: {
+    // Computed property to dynamically set the header title based on the route
+    headerTitle() {
+      switch (this.$route.path) {
+        case '/add-widget':
+          return 'Add Widget'; // For the Add Widget route
+        case '/settings':
+          return 'Settings'; // For the Settings route
+        case '/projects':
+          return 'Projects'; // For the Projects route
+        default:
+          return 'Dashboard'; // Default header for the Dashboard route
+      }
+    },
+    // Computed property to determine if the current route is "/add-widget"
+    isAddWidgetRoute() {
+      return this.$route.path === '/add-widget';
+    },
   },
   methods: {
     openProfileMenu() {
