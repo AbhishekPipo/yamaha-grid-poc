@@ -4,10 +4,10 @@
       <v-list-item to="/" exact>
         <v-list-item-title>Dashboard</v-list-item-title>
       </v-list-item>
-      <v-list-item to="/reports">
+      <v-list-item >
         <v-list-item-title>Reports</v-list-item-title>
       </v-list-item>
-      <v-list-item to="/settings">
+      <v-list-item >
         <v-list-item-title>Settings</v-list-item-title>
       </v-list-item>
     </v-list>

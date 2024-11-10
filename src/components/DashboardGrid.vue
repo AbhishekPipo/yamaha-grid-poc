@@ -24,7 +24,20 @@
           :w="item.w"
           :h="item.h"
         >
-          <v-card class="h-full">
+          <!-- Donut Chart Card -->
+          <v-card v-if="item.i === 'Card 1'" class="h-full">
+            <v-card-title>Graph</v-card-title>
+            <v-card-text>
+              <div class="chart-container">
+                <Doughnut
+                  :data="chartData"
+                  :options="chartOptions"
+                />
+              </div>
+            </v-card-text>
+          </v-card>
+          <!-- Default Card -->
+          <v-card v-else class="h-full">
             <v-card-title>{{ item.i }}</v-card-title>
             <v-card-text>Content for {{ item.i }}</v-card-text>
           </v-card>
@@ -38,18 +51,70 @@
 import { ref, onMounted, watch } from 'vue'
 import { GridLayout, GridItem } from 'vue-grid-layout-v3'
 import DashboardLayoutWrapper from '@/layouts/DashboardLayoutWrapper.vue'
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  CategoryScale
+} from 'chart.js'
+import { Doughnut } from 'vue-chartjs'  // Changed from DoughnutChart to Doughnut
+
+// Register ChartJS components
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  CategoryScale
+)
 
 const STORAGE_KEY = 'dashboard-grid-layout'
 const isResizing = ref(false)
 const isDragging = ref(false)
 
-// Initial layout configuration
+// Chart configuration
+const chartData = {
+  labels: ['Value A', 'Value B', 'Value C'],
+  datasets: [{
+    data: [20, 60, 20],
+    backgroundColor: [
+      '#9E9E9E',  // Value A - grey
+      '#BDBDBD',  // Value B - lighter grey
+      '#E0E0E0'   // Value C - lightest grey
+    ],
+    borderWidth: 0
+  }]
+}
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  cutout: '70%',
+  plugins: {
+    legend: {
+      position: 'bottom',
+      labels: {
+        boxWidth: 10,
+        padding: 20
+      }
+    },
+    tooltip: {
+      callbacks: {
+        label: (context) => `${context.label}: ${context.raw}%`
+      }
+    }
+  }
+}
+
+// Initial layout configuration - Updated height for chart
 const defaultLayout = [
-  { i: 'Card 1', x: 0, y: 0, w: 4, h: 2 },
+  { i: 'Card 1', x: 0, y: 0, w: 4, h: 4 }, // Increased height for chart
   { i: 'Card 2', x: 4, y: 0, w: 4, h: 2 },
   { i: 'Card 3', x: 8, y: 0, w: 4, h: 2 },
-  { i: 'Card 4', x: 0, y: 2, w: 6, h: 2 },
-  { i: 'Card 5', x: 6, y: 2, w: 6, h: 2 },
+  { i: 'Card 4', x: 0, y: 4, w: 6, h: 2 },
+  { i: 'Card 5', x: 6, y: 4, w: 6, h: 2 },
 ]
 
 const layout = ref(defaultLayout)
@@ -145,5 +210,12 @@ function onDragEnd(layout) {
 .v-card {
   height: 100%;
   width: 100%;
+}
+
+.chart-container {
+  position: relative;
+  height: calc(100% - 48px);
+  width: 100%;
+  margin: 0 auto;
 }
 </style>
