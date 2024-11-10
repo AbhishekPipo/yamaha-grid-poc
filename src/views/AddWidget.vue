@@ -19,27 +19,27 @@
               :items="['card', 'doughnut', 'pie', 'bar']"
               label="Widget Type"
               outlined
-              item-text="text"
-              item-value="value"
             ></v-select>
 
             <v-select
               v-model="formData.dataPair"
-              :items="['pair1', 'pair2']"
+              :items="['Sales vs Expenses', 'Revenue vs Costs']"
               label="Data Set"
               outlined
+              item-text="label"
+              item-value="value"
             ></v-select>
 
             <v-select
               v-model="formData.dimension"
-              :items="['dim1', 'dim2']"
-              label="Dimension"
+              :items="['Time (Month vs Sales)','Product vs Revenue']"
+              label="Dimension (X and Y Axes)"
               outlined
             ></v-select>
 
             <v-select
               v-model="formData.filter"
-              :items="['Last 2 Months', 'Last 6 Months']"
+              :items="filters"
               label="Filter"
               outlined
             ></v-select>
@@ -83,6 +83,7 @@
     </v-row>
   </v-container>
 </template>
+
 <script>
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
@@ -102,9 +103,25 @@ export default {
       filter: ''
     });
 
-    const chartLabels = ref(['Value A', 'Value B', 'Value C']);
-    const chartData = ref([30, 40, 30]);
-    const chartColors = ref(['#4CAF50', '#2196F3', '#FFC107']);
+    // Meaningful data sets
+    const dataSets = [
+      { label: 'Sales vs Expenses', value: 'sales_expenses' },
+      { label: 'Revenue vs Costs', value: 'revenue_costs' }
+    ];
+
+    // Dimensions for X and Y axes
+    const dimensions = [
+      { label: 'Time (Month vs Sales)', value: 'time_sales' },
+      { label: 'Product vs Revenue', value: 'product_revenue' }
+    ];
+
+    // Filters for selecting data period
+    const filters = ['Last 2 Months', 'Last 6 Months', 'Last Year'];
+
+    // Chart data and labels (this will change based on user selection)
+    const chartLabels = ref(['January', 'February', 'March', 'April']);
+    const chartData = ref([30, 50, 70, 90]); // This data will dynamically change based on selection
+    const chartColors = ref(['#4CAF50', '#2196F3', '#FFC107', '#9C27B0']);
 
     const showChart = computed(() =>
       ['doughnut', 'pie', 'bar'].includes(formData.value.widgetType)
@@ -183,7 +200,10 @@ export default {
       chartData,
       chartColors,
       showChart,
-      submitForm
+      submitForm,
+      dataSets,
+      dimensions,
+      filters
     };
   }
 };
