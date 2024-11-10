@@ -16,7 +16,7 @@
 
             <v-select
               v-model="formData.widgetType"
-              :items="['card', 'doughnut', 'pie', 'bar']"
+              :items="[ 'doughnut', 'pie', 'bar']"
               label="Widget Type"
               outlined
             ></v-select>
