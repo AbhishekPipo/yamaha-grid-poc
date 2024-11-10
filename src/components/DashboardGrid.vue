@@ -4,6 +4,7 @@
       <!-- Add Card button -->
       <div class="d-flex justify-end mb-4">
         <v-btn
+          class="add-card-btn"
           color="primary"
           prepend-icon="mdi-plus"
           @click="navigateToAddWidget"
@@ -34,10 +35,11 @@
           :y="item.y"
           :w="item.w"
           :h="item.h"
+          class="grid-item"
         >
           <!-- Donut Chart Card -->
-          <v-card v-if="item.i === 'Card 1'" class="h-full">
-            <div class="d-flex justify-space-between align-center pa-4">
+          <v-card v-if="item.i === 'Card 1'" class="chart-card h-full">
+            <div class="d-flex justify-space-between align-center pa-4 card-header">
               <v-card-title class="pa-0">Graph</v-card-title>
               <v-btn
                 icon="mdi-delete"
@@ -45,6 +47,7 @@
                 color="grey"
                 variant="text"
                 @click="deleteChart(item)"
+                class="delete-btn"
               >
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
@@ -59,9 +62,9 @@
             </v-card-text>
           </v-card>
           <!-- Default Card -->
-          <v-card v-else class="h-full">
-            <v-card-title>{{ item.i }}</v-card-title>
-            <v-card-text>Content for {{ item.i }}</v-card-text>
+          <v-card v-else class="default-card h-full">
+            <v-card-title class="default-card-title">{{ item.i }}</v-card-title>
+            <v-card-text class="default-card-content">Content for {{ item.i }}</v-card-text>
           </v-card>
         </grid-item>
       </grid-layout>
@@ -86,34 +89,23 @@ import { Doughnut } from 'vue-chartjs'
 
 const router = useRouter()
 
-// Navigation function
 const navigateToAddWidget = () => {
   router.push('/add-widget')
 }
 
-ChartJS.register(
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-  CategoryScale
-)
+ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale)
 
 const STORAGE_KEY = 'dashboard-grid-layout'
 const isResizing = ref(false)
 const isDragging = ref(false)
 
-// Chart configuration
 const chartData = {
   labels: ['Value A', 'Value B', 'Value C'],
   datasets: [{
     data: [20, 60, 20],
-    backgroundColor: [
-      '#9E9E9E',
-      '#BDBDBD',
-      '#E0E0E0'
-    ],
-    borderWidth: 0
+    backgroundColor: ['#2196F3', '#8BC34A', '#FFC107'],
+    borderColor: '#fff',
+    borderWidth: 2,
   }]
 }
 
@@ -137,7 +129,6 @@ const chartOptions = {
   }
 }
 
-// Initial layout configuration
 const defaultLayout = [
   { i: 'Card 1', x: 0, y: 0, w: 4, h: 4 },
   { i: 'Card 2', x: 4, y: 0, w: 4, h: 2 },
@@ -148,38 +139,21 @@ const defaultLayout = [
 
 const layout = ref(defaultLayout)
 
-// Delete chart function
 const deleteChart = (item) => {
   layout.value = layout.value.filter(layoutItem => layoutItem.i !== item.i)
   saveLayout(layout.value)
 }
 
+watch(layout, (newLayout) => {
+  if (!isResizing.value && !isDragging.value) saveLayout(newLayout)
+}, { deep: true })
 
-// Watch for layout changes and save them
-watch(
-  layout,
-  (newLayout) => {
-    if (!isResizing.value && !isDragging.value) {
-      saveLayout(newLayout)
-    }
-  },
-  { deep: true }
-)
-
-onMounted(() => {
-  loadSavedLayout()
-})
+onMounted(() => loadSavedLayout())
 
 function saveLayout(newLayout) {
-  if (!newLayout || !Array.isArray(newLayout)) {
-    console.error('Invalid layout data')
-    return
-  }
-
   const validatedLayout = validateLayout(newLayout)
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(validatedLayout))
-    console.log('Layout saved successfully:', validatedLayout)
   } catch (error) {
     console.error('Error saving layout:', error)
   }
@@ -188,16 +162,8 @@ function saveLayout(newLayout) {
 function loadSavedLayout() {
   try {
     const savedLayout = localStorage.getItem(STORAGE_KEY)
-    if (savedLayout) {
-      const parsedLayout = JSON.parse(savedLayout)
-      layout.value = validateLayout(parsedLayout)
-      console.log('Layout loaded successfully:', layout.value)
-    } else {
-      console.log('No saved layout found, using default')
-      layout.value = defaultLayout
-    }
+    if (savedLayout) layout.value = validateLayout(JSON.parse(savedLayout))
   } catch (error) {
-    console.error('Error loading layout:', error)
     layout.value = defaultLayout
   }
 }
@@ -207,15 +173,13 @@ function validateLayout(layoutData) {
     i: item.i || '',
     x: Number.isInteger(item.x) ? item.x : 0,
     y: Number.isInteger(item.y) ? item.y : 0,
-    w: Number.isInteger(item.w) ? Math.max(item.w, 1) : 4,
-    h: Number.isInteger(item.h) ? Math.max(item.h, 1) : 2,
+    w: Math.max(item.w, 1),
+    h: Math.max(item.h, 1),
   }))
 }
 
 function onLayoutUpdated(newLayout) {
-  if (!isResizing.value && !isDragging.value) {
-    layout.value = validateLayout(newLayout)
-  }
+  if (!isResizing.value && !isDragging.value) layout.value = validateLayout(newLayout)
 }
 
 function onResizeStart() {
@@ -239,9 +203,47 @@ function onDragEnd(layout) {
 </script>
 
 <style scoped>
-.v-card {
-  height: 100%;
-  width: 100%;
+.add-card-btn {
+  background: linear-gradient(to right, #2196F3, #21CBF3);
+  color: white;
+  border-radius: 12px;
+  transition: transform 0.2s ease;
+}
+.add-card-btn:hover {
+  transform: scale(1.05);
+}
+
+.grid-item {
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  background: linear-gradient(to right, #F5F7FA, #ECEFF1);
+  border-radius: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+}
+.grid-item:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  transform: scale(1.01);
+}
+
+.chart-card,
+.default-card {
+  background: linear-gradient(to right, #F5F7FA, #ECEFF1);
+}
+
+.chart-card .card-header {
+  border-bottom: 1px solid #E0E0E0;
+}
+
+.default-card-title {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.delete-btn {
+  transition: color 0.2s ease;
+}
+.delete-btn:hover {
+  color: #f44336;
 }
 
 .chart-container {
@@ -249,5 +251,13 @@ function onDragEnd(layout) {
   height: calc(100% - 48px);
   width: 100%;
   margin: 0 auto;
+}
+
+.v-card {
+  padding: 12px;
+  transition: transform 0.2s ease-in-out;
+}
+.v-card:hover {
+  transform: translateY(-5px);
 }
 </style>
