@@ -1,77 +1,52 @@
 <template>
-  <v-container class="d-flex justify-center mt-10">
-    <v-row>
+  <v-container class="mt-10" fluid>
+    <v-row justify="center">
       <!-- Form Section -->
       <v-col cols="12" md="6">
         <v-card class="pa-6">
-          <v-card-title>
-            <span class="text-h5">Add a Widget</span>
-          </v-card-title>
+          <v-card-title class="text-h5">Add a Widget</v-card-title>
 
           <v-form @submit.prevent="submitForm">
-            <!-- Widget Title -->
             <v-text-field
               v-model="formData.title"
               label="Widget Title"
               outlined
-              class="mb-4"
               placeholder="Enter Widget Title"
-            />
+            ></v-text-field>
 
-            <!-- Widget Type -->
             <v-select
               v-model="formData.widgetType"
-              :items="widgetTypes"
+              :items="['card', 'doughnut', 'pie', 'bar']"
               label="Widget Type"
               outlined
-              class="mb-4"
-              item-text="label"
+              item-text="text"
               item-value="value"
-              placeholder="Select Widget Type"
-            />
+            ></v-select>
 
-            <!-- Data Pair -->
             <v-select
               v-model="formData.dataPair"
-              :items="dataPairs"
-              label="Data Pair"
+              :items="['pair1', 'pair2']"
+              label="Data Set"
               outlined
-              class="mb-4"
-              item-text="label"
-              item-value="value"
-              placeholder="Select Data Set"
-            />
+            ></v-select>
 
-            <!-- Dimension -->
             <v-select
               v-model="formData.dimension"
-              :items="dimensions"
+              :items="['dim1', 'dim2']"
               label="Dimension"
               outlined
-              class="mb-4"
-              item-text="label"
-              item-value="value"
-              placeholder="Select Dimension"
-            />
+            ></v-select>
 
-            <!-- Filter -->
             <v-select
               v-model="formData.filter"
-              :items="filters"
+              :items="['Last 2 Months', 'Last 6 Months']"
               label="Filter"
               outlined
-              class="mb-4"
-              item-text="label"
-              item-value="value"
-              placeholder="Select Filter"
-            />
+            ></v-select>
 
-            <!-- Action Buttons -->
-            <v-row>
-              <v-col class="d-flex justify-end">
-                <v-btn color="primary" type="submit">Create</v-btn>
-                <v-btn color="grey" to="/" class="ml-2">Cancel</v-btn>
-              </v-col>
+            <v-row class="mt-4">
+              <v-btn type="submit" color="blue" class="mr-4">Create</v-btn>
+              <v-btn to="/" color="grey" text>Cancel</v-btn>
             </v-row>
           </v-form>
         </v-card>
@@ -80,54 +55,45 @@
       <!-- Preview Section -->
       <v-col cols="12" md="6">
         <v-card class="pa-6">
-          <v-card-title>
-            <span class="text-h5">Preview</span>
-          </v-card-title>
+          <v-card-title class="text-h5">{{ formData.title || 'Widget Preview' }}</v-card-title>
 
-          <v-divider class="mt-4"></v-divider>
+          <v-container v-if="showChart" class="text-center">
+            <canvas ref="chartCanvas" class="w-100"></canvas>
 
-          <v-card v-if="formData.widgetType === 'card'" class="pa-4" outlined>
-            <h4 class="text-h6">{{ formData.title || 'Widget Title' }}</h4>
-            <p class="text-body-2">This is a Card widget preview.</p>
-          </v-card>
+            <v-divider></v-divider>
 
-          <v-card v-if="formData.widgetType === 'doughnut'" class="pa-4" outlined>
-            <v-container class="d-flex justify-center align-center" style="height: 200px; background-color: #3f51b5; color: white;">
-              Doughnut Chart Preview
-            </v-container>
-          </v-card>
+            <v-row>
+              <v-col v-for="(label, index) in chartLabels" :key="index" cols="12" sm="6" class="d-flex align-center">
+                <v-chip :color="chartColors[index]" class="mr-2"></v-chip>
+                <span>{{ label }}</span>
+                <span class="ml-auto">{{ chartData[index] }}%</span>
+              </v-col>
+            </v-row>
+          </v-container>
 
-          <v-card v-if="formData.widgetType === 'pie'" class="pa-4" outlined>
-            <v-container class="d-flex justify-center align-center" style="height: 200px; background-color: #4caf50; color: white;">
-              Pie Chart Preview
-            </v-container>
-          </v-card>
+          <v-card-subtitle v-else-if="formData.widgetType === 'card'" class="text-center">
+            Card Preview
+          </v-card-subtitle>
 
-          <v-card v-if="formData.widgetType === 'bar'" class="pa-4" outlined>
-            <v-container class="d-flex justify-center align-center" style="height: 200px; background-color: #f44336; color: white;">
-              Bar Chart Preview
-            </v-container>
-          </v-card>
-
-          <!-- Show nothing if no widget type is selected -->
-          <v-card v-if="!formData.widgetType" class="pa-4" outlined>
-            <v-container class="d-flex justify-center align-center">
-              <span class="text-body-2">Select a widget type to see the preview</span>
-            </v-container>
-          </v-card>
+          <v-card-subtitle v-else class="text-center">
+            Select a widget type to preview
+          </v-card-subtitle>
         </v-card>
       </v-col>
     </v-row>
   </v-container>
 </template>
-
 <script>
-import { ref } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
+import Chart from 'chart.js/auto';
 
 export default {
   setup() {
     const router = useRouter();
+    const chartCanvas = ref(null);
+    const chartInstance = ref(null);
+
     const formData = ref({
       widgetType: '',
       title: '',
@@ -136,45 +102,89 @@ export default {
       filter: ''
     });
 
-    // Predefined data for select fields
-    const widgetTypes = [
-      { label: 'Card', value: 'card' },
-      { label: 'Doughnut Chart', value: 'doughnut' },
-      { label: 'Pie Chart', value: 'pie' },
-      { label: 'Bar Chart', value: 'bar' }
-    ];
-    const dataPairs = [
-      { label: 'Pair 1', value: 'pair1' },
-      { label: 'Pair 2', value: 'pair2' }
-    ];
-    const dimensions = [
-      { label: 'Dimension 1', value: 'dim1' },
-      { label: 'Dimension 2', value: 'dim2' }
-    ];
-    const filters = [
-      { label: 'Last 2 Months', value: 'filter1' },
-      { label: 'Last 6 Months', value: 'filter2' }
-    ];
+    const chartLabels = ref(['Value A', 'Value B', 'Value C']);
+    const chartData = ref([30, 40, 30]);
+    const chartColors = ref(['#4CAF50', '#2196F3', '#FFC107']);
 
-    // Handle form submission
+    const showChart = computed(() =>
+      ['doughnut', 'pie', 'bar'].includes(formData.value.widgetType)
+    );
+
+    const generateChart = () => {
+      if (!showChart.value || !chartCanvas.value) return;
+
+      // Destroy existing chart if it exists
+      if (chartInstance.value) {
+        chartInstance.value.destroy();
+      }
+
+      const ctx = chartCanvas.value.getContext('2d');
+
+      chartInstance.value = new Chart(ctx, {
+        type: formData.value.widgetType,
+        data: {
+          labels: chartLabels.value,
+          datasets: [{
+            data: chartData.value,
+            backgroundColor: chartColors.value,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      });
+    };
+
+    // Watch for changes in widget type
+    watch(() => formData.value.widgetType, () => {
+      if (showChart.value) {
+        // Use nextTick to ensure DOM is updated
+        nextTick(() => {
+          generateChart();
+        });
+      }
+    });
+
+    // Generate chart on data changes
+    watch([chartData, chartLabels], () => {
+      if (showChart.value) {
+        generateChart();
+      }
+    });
+
+    onMounted(() => {
+      if (showChart.value) {
+        generateChart();
+      }
+    });
+
+    onBeforeUnmount(() => {
+      if (chartInstance.value) {
+        chartInstance.value.destroy();
+      }
+    });
+
     const submitForm = () => {
-      console.log('Form Data Submitted:', formData.value);
-      // Redirect back to the dashboard (or anywhere you want)
+      console.log("Widget Created:", formData.value);
       router.push('/');
     };
 
     return {
       formData,
-      widgetTypes,
-      dataPairs,
-      dimensions,
-      filters,
+      chartCanvas,
+      chartLabels,
+      chartData,
+      chartColors,
+      showChart,
       submitForm
     };
   }
-}
+};
 </script>
-
-<style scoped>
-/* Add custom styles if needed */
-</style>
