@@ -9,7 +9,7 @@
     </v-navigation-drawer>
 
     <v-app-bar app>
-      <v-toolbar-title>My Vue Dashboard</v-toolbar-title>
+      <v-toolbar-title>My Vue Dashboard1</v-toolbar-title>
     </v-app-bar>
 
     <v-main>
