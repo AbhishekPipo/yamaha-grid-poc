@@ -1,106 +1,5 @@
-<template>
-  <DashboardSidebar />
-  <DashboardHeader />
-  <DashboardLayoutWrapper>
-    <div class="min-h-screen bg-gradient-to-r from-gray-100 to-gray-200 p-6">
-      <div class="flex justify-end mb-6">
-        <button
-          class="bg-indigo-600 text-white rounded-lg py-2 px-6 shadow-lg hover:bg-indigo-700 transition-all"
-          @click="navigateToAddWidget"
-        >
-          <i class="fas fa-plus mr-2"></i> Add a Card
-        </button>
-      </div>
-
-      <grid-layout
-        v-model:layout="layout"
-        :col-num="12"
-        :row-height="50"
-        :is-draggable="true"
-        :is-resizable="true"
-        :vertical-compact="true"
-        :margin="[16, 16]"
-        :use-css-transforms="true"
-        @layout-updated="onLayoutUpdated"
-        @resize-end="onResizeEnd"
-        @drag-end="onDragEnd"
-      >
-        <grid-item
-          v-for="item in layout"
-          :key="item.i"
-          :i="item.i"
-          :x="item.x"
-          :y="item.y"
-          :w="item.w"
-          :h="item.h"
-          :min-w="3"
-          :min-h="3"
-        >
-          <!-- Dynamic Chart Card -->
-          <div
-            v-if="item.chartType"
-            class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1"
-          >
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-lg font-semibold text-gray-800">{{ item.title || 'Chart' }}</h2>
-              <div class="flex items-center space-x-2">
-                <button
-                  class="text-gray-500 hover:text-blue-500 transition-colors"
-                  @click="editWidget(item)"
-                >
-                  <!-- <i class="fas fa-edit"></i> -->
-                </button>
-                <button
-                  class="text-gray-500 hover:text-red-500 transition-colors"
-                  @click="deleteWidget(item)"
-                >
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            </div>
-            <div class="relative h-[calc(100%-3rem)]">
-              <component
-                :is="getChartComponent(item.chartType)"
-                :data="item.chartData"
-                :options="getChartOptions(item)"
-                class="h-full w-full"
-              />
-            </div>
-          </div>
-
-          <!-- Static Cards -->
-          <div
-            v-else
-            class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1"
-          >
-            <div class="flex justify-between items-center h-full">
-              <div class="flex flex-col justify-between py-2">
-                <div>
-                  <h3 class="text-gray-500 text-lg font-medium">{{ getCardTitle(item.i) }}</h3>
-                  <p class="text-3xl font-bold text-gray-800 mt-2">{{ getCardValue(item.i) }}</p>
-                </div>
-                <div class="flex items-center mt-4">
-                  <span class="text-green-500 text-sm">
-                    <i class="fas fa-arrow-up mr-1"></i>4.75%
-                  </span>
-                  <span class="text-gray-400 text-sm ml-1">vs last week</span>
-                </div>
-              </div>
-              <div class="flex items-center">
-                <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                  <i :class="getCardIcon(item.i)" class="text-indigo-600 text-xl"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        </grid-item>
-      </grid-layout>
-    </div>
-  </DashboardLayoutWrapper>
-</template>
-
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { GridLayout, GridItem } from 'vue-grid-layout-v3';
 import {
@@ -127,6 +26,15 @@ ChartJS.register(
 
 const router = useRouter();
 const layout = ref([]);
+
+// Watch for any changes to the layout
+watch(
+  () => layout.value,
+  (newLayout) => {
+    saveLayout(newLayout);
+  },
+  { deep: true }
+);
 
 const chartComponents = {
   doughnut: Doughnut,
@@ -242,16 +150,45 @@ const deleteWidget = (item) => {
   saveLayout(layout.value);
 };
 
+// Enhanced layout saving function with validation
 const saveLayout = (newLayout) => {
-  localStorage.setItem('dashboard-grid-layout', JSON.stringify(newLayout));
+  if (!Array.isArray(newLayout)) return;
+
+  // Ensure all required properties exist before saving
+  const validLayout = newLayout.map(item => ({
+    i: item.i,
+    x: parseInt(item.x) || 0,
+    y: parseInt(item.y) || 0,
+    w: parseInt(item.w) || 3,
+    h: parseInt(item.h) || 4,
+    chartType: item.chartType,
+    chartData: item.chartData,
+    title: item.title
+  }));
+
+  localStorage.setItem('dashboard-grid-layout', JSON.stringify(validLayout));
 };
 
+// Enhanced layout loading function with validation
 const loadSavedLayout = () => {
   try {
     const savedLayout = localStorage.getItem('dashboard-grid-layout');
     if (savedLayout) {
       const parsedLayout = JSON.parse(savedLayout);
-      layout.value = parsedLayout.length > 0 ? parsedLayout : initializeDefaultLayout();
+
+      // Validate each item in the layout
+      const validatedLayout = parsedLayout.map(item => ({
+        i: item.i,
+        x: parseInt(item.x) || 0,
+        y: parseInt(item.y) || 0,
+        w: parseInt(item.w) || 3,
+        h: parseInt(item.h) || 4,
+        chartType: item.chartType,
+        chartData: item.chartData,
+        title: item.title
+      }));
+
+      layout.value = validatedLayout.length > 0 ? validatedLayout : initializeDefaultLayout();
     } else {
       layout.value = initializeDefaultLayout();
     }
@@ -261,22 +198,131 @@ const loadSavedLayout = () => {
   }
 };
 
+// Event handlers that trigger layout saves
 const onLayoutUpdated = (newLayout) => {
-  layout.value = newLayout;
+  // Create a deep copy to ensure reactivity
+  const layoutCopy = JSON.parse(JSON.stringify(newLayout));
+  layout.value = layoutCopy;
+  saveLayout(layoutCopy);
 };
 
-const onResizeEnd = (layout) => {
-  saveLayout(layout);
+const onResizeEnd = (newLayout) => {
+  const layoutCopy = JSON.parse(JSON.stringify(newLayout));
+  layout.value = layoutCopy;
+  saveLayout(layoutCopy);
 };
 
-const onDragEnd = (layout) => {
-  saveLayout(layout);
+const onDragEnd = (newLayout) => {
+  const layoutCopy = JSON.parse(JSON.stringify(newLayout));
+  layout.value = layoutCopy;
+  saveLayout(layoutCopy);
 };
 
 onMounted(() => {
   loadSavedLayout();
 });
 </script>
+
+<template>
+  <DashboardSidebar />
+  <DashboardHeader />
+  <DashboardLayoutWrapper>
+    <div class="min-h-screen bg-gradient-to-r from-gray-100 to-gray-200 p-6">
+      <div class="flex justify-end mb-6">
+        <button
+          class="bg-indigo-600 text-white rounded-lg py-2 px-6 shadow-lg hover:bg-indigo-700 transition-all"
+          @click="navigateToAddWidget"
+        >
+          <i class="fas fa-plus mr-2"></i> Add a Card
+        </button>
+      </div>
+
+      <grid-layout
+        v-model:layout="layout"
+        :col-num="12"
+        :row-height="50"
+        :is-draggable="true"
+        :is-resizable="true"
+        :vertical-compact="true"
+        :margin="[16, 16]"
+        :use-css-transforms="true"
+        @layout-updated="onLayoutUpdated"
+        @resize-end="onResizeEnd"
+        @drag-end="onDragEnd"
+      >
+        <grid-item
+          v-for="item in layout"
+          :key="item.i"
+          :i="item.i"
+          :x="item.x"
+          :y="item.y"
+          :w="item.w"
+          :h="item.h"
+          :min-w="3"
+          :min-h="3"
+        >
+          <!-- Dynamic Chart Card -->
+          <div
+            v-if="item.chartType"
+            class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1"
+          >
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-lg font-semibold text-gray-800">{{ item.title || 'Chart' }}</h2>
+              <div class="flex items-center space-x-2">
+                <!-- <button
+                  class="text-gray-500 hover:text-blue-500 transition-colors"
+                  @click="editWidget(item)"
+                >
+                  <i class="fas fa-edit"></i>
+                </button> -->
+                <button
+                  class="text-gray-500 hover:text-red-500 transition-colors"
+                  @click="deleteWidget(item)"
+                >
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+            <div class="relative h-[calc(100%-3rem)]">
+              <component
+                :is="getChartComponent(item.chartType)"
+                :data="item.chartData"
+                :options="getChartOptions(item)"
+                class="h-full w-full"
+              />
+            </div>
+          </div>
+
+          <!-- Static Cards -->
+          <div
+            v-else
+            class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1"
+          >
+            <div class="flex justify-between items-center h-full">
+              <div class="flex flex-col justify-between py-2">
+                <div>
+                  <h3 class="text-gray-500 text-lg font-medium">{{ getCardTitle(item.i) }}</h3>
+                  <p class="text-3xl font-bold text-gray-800 mt-2">{{ getCardValue(item.i) }}</p>
+                </div>
+                <div class="flex items-center mt-4">
+                  <span class="text-green-500 text-sm">
+                    <i class="fas fa-arrow-up mr-1"></i>4.75%
+                  </span>
+                  <span class="text-gray-400 text-sm ml-1">vs last week</span>
+                </div>
+              </div>
+              <div class="flex items-center">
+                <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <i :class="getCardIcon(item.i)" class="text-indigo-600 text-xl"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </grid-item>
+      </grid-layout>
+    </div>
+  </DashboardLayoutWrapper>
+</template>
 
 <style scoped>
 .vue-grid-item {
