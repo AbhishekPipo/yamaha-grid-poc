@@ -38,7 +38,7 @@
                 <v-select
                   v-model="formData.dimension"
                   :items="dimensions"
-                  label="Dimension (X and Y Axes)"
+                  label="Dimension"
                   outlined
                   class="select-field"
                 ></v-select>
@@ -106,21 +106,10 @@ export default {
   setup() {
     const router = useRouter();
 
-    // Chart type mapping
-    const chartComponents = {
-      doughnut: 'Doughnut',
-      pie: 'Pie',
-      bar: 'Bar'
-    };
-
-    const chartTypes = [
-      { text: 'Doughnut Chart', value: 'doughnut' },
-      { text: 'Pie Chart', value: 'pie' },
-      { text: 'Bar Chart', value: 'bar' }
-    ];
-
-    const dataSets = ['sales_expenses', 'revenue_costs'];
-    const dimensions = ['time_sales', 'product_revenue'];
+    // Simplified arrays with just values
+    const chartTypes = ['doughnut', 'pie', 'bar'];
+    const dataSets = ['sales', 'revenue', 'expenses'];
+    const dimensions = ['monthly', 'quarterly', 'yearly'];
 
     const formData = ref({
       title: '',
@@ -130,35 +119,43 @@ export default {
     });
 
     const generateChartData = (dataType, chartType) => {
-      const baseData = {
-        sales_expenses: {
-          labels: ['Sales', 'Expenses'],
+      const dataMap = {
+        sales: {
+          labels: ['Direct', 'Online', 'Retail'],
           datasets: [{
-            data: [65, 35],
-            backgroundColor: ['#36A2EB', '#FF6384'],
+            data: [30, 40, 30],
+            backgroundColor: ['#36A2EB', '#FF6384', '#4CAF50'],
             borderWidth: 0
           }]
         },
-        revenue_costs: {
-          labels: ['Revenue', 'Costs'],
+        revenue: {
+          labels: ['Products', 'Services', 'Subscriptions'],
           datasets: [{
-            data: [70, 30],
-            backgroundColor: ['#4CAF50', '#FFC107'],
+            data: [45, 30, 25],
+            backgroundColor: ['#4CAF50', '#FFC107', '#9C27B0'],
+            borderWidth: 0
+          }]
+        },
+        expenses: {
+          labels: ['Operations', 'Marketing', 'Development'],
+          datasets: [{
+            data: [35, 25, 40],
+            backgroundColor: ['#FF9800', '#E91E63', '#2196F3'],
             borderWidth: 0
           }]
         }
       };
 
-      const data = baseData[dataType] || {
-        labels: ['Value A', 'Value B'],
+      const data = dataMap[dataType] || {
+        labels: ['Category A', 'Category B', 'Category C'],
         datasets: [{
-          data: [50, 50],
-          backgroundColor: ['#9C27B0', '#E91E63'],
+          data: [33, 33, 34],
+          backgroundColor: ['#9C27B0', '#E91E63', '#2196F3'],
           borderWidth: 0
         }]
       };
 
-      // Add additional properties for bar charts
+      // Add specific properties for bar charts
       if (chartType === 'bar') {
         data.datasets[0] = {
           ...data.datasets[0],
@@ -171,9 +168,14 @@ export default {
       return data;
     };
 
-    const selectedChartComponent = computed(() =>
-      chartComponents[formData.value.widgetType] || 'Doughnut'
-    );
+    const selectedChartComponent = computed(() => {
+      const componentMap = {
+        doughnut: 'Doughnut',
+        pie: 'Pie',
+        bar: 'Bar'
+      };
+      return componentMap[formData.value.widgetType] || 'Doughnut';
+    });
 
     const chartData = computed(() =>
       generateChartData(formData.value.dataPair, formData.value.widgetType)
@@ -196,7 +198,22 @@ export default {
             label: (context) => `${context.label}: ${context.raw}%`
           }
         }
-      }
+      },
+      ...(formData.value.widgetType === 'bar' && {
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              drawBorder: false
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        }
+      })
     }));
 
     const showPreviewChart = computed(() =>

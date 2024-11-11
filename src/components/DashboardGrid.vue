@@ -1,10 +1,8 @@
 <template>
-  <!-- Include the Sidebar and Header components -->
   <DashboardSidebar />
   <DashboardHeader />
   <DashboardLayoutWrapper>
     <div class="min-h-screen bg-gradient-to-r from-gray-100 to-gray-200 p-6">
-      <!-- Add Card button -->
       <div class="flex justify-end mb-6">
         <button
           class="bg-indigo-600 text-white rounded-lg py-2 px-6 shadow-lg hover:bg-indigo-700 transition-all"
@@ -14,7 +12,6 @@
         </button>
       </div>
 
-      <!-- Grid Layout -->
       <grid-layout
         v-model:layout="layout"
         :col-num="12"
@@ -74,19 +71,26 @@
           <!-- Static Cards -->
           <div
             v-else
-            class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex flex-col justify-between"
+            class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1"
           >
-            <div class="flex justify-between items-start">
-              <h3 class="text-gray-500 text-lg font-medium">{{ getCardTitle(item.i) }}</h3>
-              <span class="text-sm text-gray-400">Last 24h</span>
-            </div>
-            <div class="my-4">
-              <p class="text-3xl font-bold text-gray-800">{{ getCardValue(item.i) }}</p>
-              <p class="text-sm text-green-500 mt-2">
-                <i class="fas fa-arrow-up mr-1"></i>
-                <span>4.75%</span>
-                <span class="text-gray-400 ml-1">vs last week</span>
-              </p>
+            <div class="flex justify-between items-center h-full">
+              <div class="flex flex-col justify-between py-2">
+                <div>
+                  <h3 class="text-gray-500 text-lg font-medium">{{ getCardTitle(item.i) }}</h3>
+                  <p class="text-3xl font-bold text-gray-800 mt-2">{{ getCardValue(item.i) }}</p>
+                </div>
+                <div class="flex items-center mt-4">
+                  <span class="text-green-500 text-sm">
+                    <i class="fas fa-arrow-up mr-1"></i>4.75%
+                  </span>
+                  <span class="text-gray-400 text-sm ml-1">vs last week</span>
+                </div>
+              </div>
+              <div class="flex items-center">
+                <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <i :class="getCardIcon(item.i)" class="text-indigo-600 text-xl"></i>
+                </div>
+              </div>
             </div>
           </div>
         </grid-item>
@@ -111,7 +115,6 @@ import {
 } from 'chart.js';
 import { Doughnut, Pie, Bar } from 'vue-chartjs';
 
-// Register ChartJS components
 ChartJS.register(
   Title,
   Tooltip,
@@ -125,17 +128,14 @@ ChartJS.register(
 const router = useRouter();
 const layout = ref([]);
 
-// Chart component mapping
 const chartComponents = {
   doughnut: Doughnut,
   pie: Pie,
   bar: Bar
 };
 
-// Get appropriate chart component
 const getChartComponent = (type) => chartComponents[type] || Doughnut;
 
-// Get chart options based on chart type
 const getChartOptions = (item) => {
   const baseOptions = {
     responsive: true,
@@ -150,16 +150,10 @@ const getChartOptions = (item) => {
             size: 12
           }
         }
-      },
-      tooltip: {
-        callbacks: {
-          label: (context) => `${context.label}: ${context.raw}%`
-        }
       }
     }
   };
 
-  // Add specific options based on chart type
   if (item.chartType === 'doughnut' || item.chartType === 'pie') {
     return {
       ...baseOptions,
@@ -189,7 +183,7 @@ const getChartOptions = (item) => {
   return baseOptions;
 };
 
-// Static card data (you can replace this with real data)
+// Static card data
 const getCardTitle = (cardId) => {
   const titles = {
     'Card 2': 'All Devices Health',
@@ -212,24 +206,42 @@ const getCardValue = (cardId) => {
   return values[cardId] || '0';
 };
 
-// Navigation
+const getCardIcon = (cardId) => {
+  const icons = {
+    'Card 2': 'fas fa-heartbeat',
+    'Card 3': 'fas fa-server',
+    'Card 4': 'fas fa-project-diagram',
+    'Card 5': 'fas fa-users',
+    'Card 6': 'fas fa-microchip'
+  };
+  return icons[cardId] || 'fas fa-chart-line';
+};
+
+// Initialize default layout with static cards
+const initializeDefaultLayout = () => {
+  return [
+    { i: 'Card 2', x: 0, y: 0, w: 3, h: 4 },
+    { i: 'Card 3', x: 3, y: 0, w: 3, h: 4 },
+    { i: 'Card 4', x: 6, y: 0, w: 3, h: 4 },
+    { i: 'Card 5', x: 9, y: 0, w: 3, h: 4 },
+    { i: 'Card 6', x: 0, y: 4, w: 3, h: 4 }
+  ];
+};
+
 const navigateToAddWidget = () => {
   router.push('/add-widget');
 };
 
 const editWidget = (item) => {
-  // Store the item to edit in localStorage or state management
   localStorage.setItem('editing-widget', JSON.stringify(item));
   router.push('/edit-widget');
 };
 
-// Widget Management
 const deleteWidget = (item) => {
   layout.value = layout.value.filter(widget => widget.i !== item.i);
   saveLayout(layout.value);
 };
 
-// Layout Management
 const saveLayout = (newLayout) => {
   localStorage.setItem('dashboard-grid-layout', JSON.stringify(newLayout));
 };
@@ -238,15 +250,17 @@ const loadSavedLayout = () => {
   try {
     const savedLayout = localStorage.getItem('dashboard-grid-layout');
     if (savedLayout) {
-      layout.value = JSON.parse(savedLayout);
+      const parsedLayout = JSON.parse(savedLayout);
+      layout.value = parsedLayout.length > 0 ? parsedLayout : initializeDefaultLayout();
+    } else {
+      layout.value = initializeDefaultLayout();
     }
   } catch (error) {
     console.error('Error loading layout:', error);
-    layout.value = [];
+    layout.value = initializeDefaultLayout();
   }
 };
 
-// Event Handlers
 const onLayoutUpdated = (newLayout) => {
   layout.value = newLayout;
 };
@@ -259,7 +273,6 @@ const onDragEnd = (layout) => {
   saveLayout(layout);
 };
 
-// Lifecycle
 onMounted(() => {
   loadSavedLayout();
 });
@@ -285,33 +298,17 @@ onMounted(() => {
   opacity: 0.9;
 }
 
-.vue-grid-item.static {
-  background: #cce;
-}
-
-.vue-grid-item .text {
-  text-align: center;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
-
-/* Add smooth transitions for hover effects */
-.hover\:-translate-y-1:hover {
-  transition: transform 0.2s ease-in-out;
-}
-
-/* Improve button hover states */
-button {
-  transition: all 0.2s ease-in-out;
-}
-
-/* Ensure charts maintain aspect ratio while resizing */
 .chart-wrapper {
   position: relative;
   width: 100%;
   height: 100%;
+}
+
+.hover\:-translate-y-1:hover {
+  transition: transform 0.2s ease-in-out;
+}
+
+button {
+  transition: all 0.2s ease-in-out;
 }
 </style>
