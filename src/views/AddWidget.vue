@@ -106,7 +106,6 @@ export default {
   setup() {
     const router = useRouter();
 
-    // Simplified arrays with just values
     const chartTypes = ['doughnut', 'pie', 'bar'];
     const dataSets = ['sales', 'revenue', 'expenses'];
     const dimensions = ['monthly', 'quarterly', 'yearly'];
@@ -155,7 +154,6 @@ export default {
         }]
       };
 
-      // Add specific properties for bar charts
       if (chartType === 'bar') {
         data.datasets[0] = {
           ...data.datasets[0],
@@ -220,13 +218,63 @@ export default {
       formData.value.widgetType && formData.value.dataPair
     );
 
+    // Calculate the position for the new widget
+    const calculateNewWidgetPosition = (existingLayout) => {
+      const GRID_COLUMNS = 12; // Total number of columns in the grid
+      const WIDGET_WIDTH = 4;  // Default widget width
+      // const WIDGET_HEIGHT = 4; // Default widget height
+
+      if (!existingLayout.length) {
+        return { x: 0, y: 0 };
+      }
+
+      // Find the highest y-coordinate and its row
+      let maxY = 0;
+      let lastRowItems = [];
+
+      existingLayout.forEach(item => {
+        const itemBottom = item.y + item.h;
+        if (itemBottom >= maxY) {
+          if (itemBottom > maxY) {
+            maxY = itemBottom;
+            lastRowItems = [];
+          }
+          lastRowItems.push(item);
+        }
+      });
+
+      // Sort last row items by x position
+      lastRowItems.sort((a, b) => a.x - b.x);
+
+      // Find the last item in the row
+      const lastItem = lastRowItems[lastRowItems.length - 1];
+
+      // If there's space in the current row
+      if (lastItem && (lastItem.x + lastItem.w + WIDGET_WIDTH) <= GRID_COLUMNS) {
+        return {
+          x: lastItem.x + lastItem.w,
+          y: lastItem.y
+        };
+      }
+
+      // If no space in current row, start a new row
+      return {
+        x: 0,
+        y: maxY
+      };
+    };
+
     const submitForm = () => {
       const widgetId = `Card ${Date.now()}`;
+      const existingLayout = JSON.parse(localStorage.getItem('dashboard-grid-layout') || '[]');
+
+      // Calculate the position for the new widget
+      const position = calculateNewWidgetPosition(existingLayout);
 
       const newWidget = {
         i: widgetId,
-        x: 0,
-        y: 0,
+        x: position.x,
+        y: position.y,
         w: 4,
         h: 4,
         chartType: formData.value.widgetType,
@@ -235,7 +283,6 @@ export default {
         title: formData.value.title
       };
 
-      const existingLayout = JSON.parse(localStorage.getItem('dashboard-grid-layout') || '[]');
       const updatedLayout = [...existingLayout, newWidget];
       localStorage.setItem('dashboard-grid-layout', JSON.stringify(updatedLayout));
 
