@@ -56,7 +56,12 @@
             <v-card class="preview-card pa-6">
               <v-card-title class="text-h5">{{ formData.title || 'Widget Preview' }}</v-card-title>
               <div class="chart-container">
-                <Doughnut v-if="showPreviewChart" :data="chartData" :options="chartOptions" />
+                <component
+                  v-if="showPreviewChart"
+                  :is="selectedChartComponent"
+                  :data="chartData"
+                  :options="chartOptions"
+                />
               </div>
             </v-card>
           </v-col>
@@ -76,21 +81,44 @@ import {
   Legend,
   ArcElement,
   CategoryScale,
+  LinearScale,
+  BarElement,
 } from 'chart.js';
-import { Doughnut } from 'vue-chartjs';
+import { Doughnut, Pie, Bar } from 'vue-chartjs';
 
-ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale);
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  BarElement
+);
 
 export default {
   components: {
-    Doughnut
+    Doughnut,
+    Pie,
+    Bar
   },
 
   setup() {
     const router = useRouter();
 
-    // Simplified arrays
-    const chartTypes = ['doughnut', 'pie', 'bar'];
+    // Chart type mapping
+    const chartComponents = {
+      doughnut: 'Doughnut',
+      pie: 'Pie',
+      bar: 'Bar'
+    };
+
+    const chartTypes = [
+      { text: 'Doughnut Chart', value: 'doughnut' },
+      { text: 'Pie Chart', value: 'pie' },
+      { text: 'Bar Chart', value: 'bar' }
+    ];
+
     const dataSets = ['sales_expenses', 'revenue_costs'];
     const dimensions = ['time_sales', 'product_revenue'];
 
@@ -101,66 +129,60 @@ export default {
       dimension: ''
     });
 
-    const generateChartData = (dataType) => {
-      switch(dataType) {
-        case 'sales_expenses':
-          return {
-            labels: ['Sales', 'Expenses'],
-            datasets: [{
-              data: [65, 35],
-              backgroundColor: ['#36A2EB', '#FF6384'],
-              borderWidth: 0
-            }]
-          };
-        case 'revenue_costs':
-          return {
-            labels: ['Revenue', 'Costs'],
-            datasets: [{
-              data: [70, 30],
-              backgroundColor: ['#4CAF50', '#FFC107'],
-              borderWidth: 0
-            }]
-          };
-        default:
-          return {
-            labels: ['Value A', 'Value B'],
-            datasets: [{
-              data: [50, 50],
-              backgroundColor: ['#9C27B0', '#E91E63'],
-              borderWidth: 0
-            }]
-          };
+    const generateChartData = (dataType, chartType) => {
+      const baseData = {
+        sales_expenses: {
+          labels: ['Sales', 'Expenses'],
+          datasets: [{
+            data: [65, 35],
+            backgroundColor: ['#36A2EB', '#FF6384'],
+            borderWidth: 0
+          }]
+        },
+        revenue_costs: {
+          labels: ['Revenue', 'Costs'],
+          datasets: [{
+            data: [70, 30],
+            backgroundColor: ['#4CAF50', '#FFC107'],
+            borderWidth: 0
+          }]
+        }
+      };
+
+      const data = baseData[dataType] || {
+        labels: ['Value A', 'Value B'],
+        datasets: [{
+          data: [50, 50],
+          backgroundColor: ['#9C27B0', '#E91E63'],
+          borderWidth: 0
+        }]
+      };
+
+      // Add additional properties for bar charts
+      if (chartType === 'bar') {
+        data.datasets[0] = {
+          ...data.datasets[0],
+          borderWidth: 1,
+          borderColor: data.datasets[0].backgroundColor,
+          barPercentage: 0.6
+        };
       }
+
+      return data;
     };
 
-    // Format display labels for select inputs
-    const formatLabel = (value) => {
-      switch(value) {
-        // Chart Types
-        case 'doughnut': return 'Doughnut Chart';
-        case 'pie': return 'Pie Chart';
-        case 'bar': return 'Bar Chart';
-
-        // Data Sets
-        case 'sales_expenses': return 'Sales vs Expenses';
-        case 'revenue_costs': return 'Revenue vs Costs';
-
-        // Dimensions
-        case 'time_sales': return 'Time (Month vs Sales)';
-        case 'product_revenue': return 'Product vs Revenue';
-
-        default: return value;
-      }
-    };
-
-    const chartData = computed(() =>
-      generateChartData(formData.value.dataPair)
+    const selectedChartComponent = computed(() =>
+      chartComponents[formData.value.widgetType] || 'Doughnut'
     );
 
-    const chartOptions = {
+    const chartData = computed(() =>
+      generateChartData(formData.value.dataPair, formData.value.widgetType)
+    );
+
+    const chartOptions = computed(() => ({
       responsive: true,
       maintainAspectRatio: false,
-      cutout: '70%',
+      ...(formData.value.widgetType === 'doughnut' && { cutout: '70%' }),
       plugins: {
         legend: {
           position: 'bottom',
@@ -175,7 +197,7 @@ export default {
           }
         }
       }
-    };
+    }));
 
     const showPreviewChart = computed(() =>
       formData.value.widgetType && formData.value.dataPair
@@ -192,7 +214,7 @@ export default {
         h: 4,
         chartType: formData.value.widgetType,
         chartData: chartData.value,
-        chartOptions,
+        chartOptions: chartOptions.value,
         title: formData.value.title
       };
 
@@ -212,7 +234,7 @@ export default {
       chartOptions,
       showPreviewChart,
       submitForm,
-      formatLabel
+      selectedChartComponent
     };
   }
 };
@@ -223,6 +245,4 @@ export default {
   height: 300px;
   position: relative;
 }
-
-/* Rest of your existing styles... */
 </style>
