@@ -56,11 +56,44 @@
 
           <!-- Default Card -->
           <div
-            v-else
+          v-if="item.i === 'Card 2'"
+
             class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex flex-col justify-center"
           >
-            <h3 class="text-gray-500 text-lg">{{ item.i }}</h3>
+            <h3 class="text-gray-500 text-lg">All Devices Health</h3>
             <p class="text-3xl font-bold mt-2">6,452</p>
+          </div>
+          <div
+          v-if="item.i === 'Card 3'"
+
+            class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex flex-col justify-center"
+          >
+            <h3 class="text-gray-500 text-lg">Total Devices Status</h3>
+            <p class="text-3xl font-bold mt-2">42,502</p>
+          </div>
+          <div
+          v-if="item.i === 'Card 4'"
+
+            class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex flex-col justify-center"
+          >
+            <h3 class="text-gray-500 text-lg">Active Projects</h3>
+            <p class="text-3xl font-bold mt-2">56,201</p>
+          </div>
+          <div
+          v-if="item.i === 'Card 5'"
+
+            class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex flex-col justify-center"
+          >
+            <h3 class="text-gray-500 text-lg">Total Users</h3>
+            <p class="text-3xl font-bold mt-2">6,452</p>
+          </div>
+          <div
+          v-if="item.i === 'Card 6'"
+
+            class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex flex-col justify-center"
+          >
+            <h3 class="text-gray-500 text-lg">Total Devices </h3>
+            <p class="text-3xl font-bold mt-2">62,303</p>
           </div>
         </grid-item>
       </grid-layout>
@@ -134,6 +167,8 @@ const defaultLayout = [
   { i: 'Card 3', x: 8, y: 0, w: 4, h: 2 },
   { i: 'Card 4', x: 0, y: 4, w: 6, h: 2 },
   { i: 'Card 5', x: 6, y: 4, w: 6, h: 2 },
+  { i: 'Card 6', x: 0, y: 6, w: 4, h: 2 }  // Added new card
+
 ]
 
 const layout = ref(defaultLayout)
