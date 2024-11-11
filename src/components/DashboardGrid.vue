@@ -48,7 +48,7 @@
                   class="text-gray-500 hover:text-blue-500 transition-colors"
                   @click="editWidget(item)"
                 >
-                  <i class="fas fa-edit"></i>
+                  <!-- <i class="fas fa-edit"></i> -->
                 </button>
                 <button
                   class="text-gray-500 hover:text-red-500 transition-colors"
