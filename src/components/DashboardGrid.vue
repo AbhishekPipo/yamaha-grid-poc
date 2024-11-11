@@ -1,6 +1,5 @@
 <template>
   <DashboardLayoutWrapper>
-    <!-- Parent Container with Gradient Background -->
     <v-container fluid class="gradient-background">
       <!-- Add Card button -->
       <div class="d-flex justify-end mb-4">
@@ -21,7 +20,7 @@
         :is-draggable="true"
         :is-resizable="true"
         :vertical-compact="true"
-        :margin="[10, 10]"
+        :margin="[16, 16]"
         @layout-updated="onLayoutUpdated"
         @resize="onResize"
         @resize-start="onResizeStart"
@@ -38,14 +37,19 @@
           :h="item.h"
         >
           <!-- Donut Chart Card -->
-          <v-card v-if="item.i === 'Card 1'" class="h-full card-gradient">
-            <div class="d-flex justify-space-between align-center pa-4">
-              <v-card-title class="pa-0">Graph</v-card-title>
+          <v-card
+            v-if="item.i === 'Card 1'"
+            class="h-full dashboard-card"
+            elevation="0"
+          >
+            <div class="d-flex justify-space-between align-center px-4 pt-4">
+              <v-card-title class="card-title">Graph</v-card-title>
               <v-btn
                 icon="mdi-delete"
                 size="small"
-                color="grey"
+                color="grey-darken-1"
                 variant="text"
+                class="delete-btn"
                 @click="deleteChart(item)"
               >
                 <v-icon>mdi-delete</v-icon>
@@ -61,9 +65,19 @@
             </v-card-text>
           </v-card>
           <!-- Default Card -->
-          <v-card v-else class="h-full card-gradient">
-            <v-card-title class="text-subtitle-1 text-grey-darken-1 font-weight-normal">{{ item.i }}</v-card-title>
-            <v-card-text class="text-h2 mt-2 font-weight-normal">Content for {{ item.i }}</v-card-text>
+          <v-card
+            v-else
+            class="h-full dashboard-card"
+            elevation="0"
+          >
+            <div class="card-content px-4 py-4">
+              <v-card-title class="text-subtitle-1 text-grey-darken-1 font-weight-normal mb-2 pl-0">
+                {{ item.i }}
+              </v-card-title>
+              <v-card-text class="text-h2 font-weight-normal pa-0">
+                6,452
+              </v-card-text>
+            </div>
           </v-card>
         </grid-item>
       </grid-layout>
@@ -71,6 +85,115 @@
   </DashboardLayoutWrapper>
 </template>
 
+<style scoped>
+/* Enhanced gradient background */
+.gradient-background {
+  background: linear-gradient(135deg, #F5F7FA 0%, #ECEFF1 100%);
+  min-height: 100vh;
+  padding: 24px;
+}
+
+/* Enhanced card styling */
+.dashboard-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.8) 100%);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+  height: 100%;
+  overflow: hidden;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* Card content styling */
+.card-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.text-subtitle-1 {
+  font-size: 1.125rem !important;
+  line-height: 1.5 !important;
+  color: rgba(0, 0, 0, 0.6) !important;
+  letter-spacing: 0.015em;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.text-h2 {
+  font-size: 2.5rem !important;
+  line-height: 1.2 !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+  letter-spacing: -0.005em;
+  padding: 0 !important;
+}
+
+/* Enhanced Add Card button */
+.add-card-btn {
+  background: linear-gradient(135deg, #6200EE 0%, #3700B3 100%);
+  color: white;
+  border-radius: 12px;
+  padding: 0 24px;
+  height: 44px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: none;
+  box-shadow: 0 4px 20px rgba(98, 0, 238, 0.2);
+  transition: all 0.3s ease;
+}
+
+.add-card-btn:hover {
+  background: linear-gradient(135deg, #7722FF 0%, #4400D1 100%);
+  box-shadow: 0 6px 25px rgba(98, 0, 238, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Chart container enhancement */
+.chart-container {
+  position: relative;
+  height: calc(100% - 56px);
+  width: 100%;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* Delete button styling */
+.delete-btn {
+  opacity: 0.6;
+  transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* Card title styling */
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.87);
+  letter-spacing: 0.0075em;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Override any default padding */
+.v-card-title {
+  padding-left: 0 !important;
+}
+
+.v-card-text {
+  padding-left: 0 !important;
+}
+</style>
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -238,61 +361,4 @@ function onDragEnd(layout) {
 }
 </script>
 
-<style scoped>
-/* Apply the gradient background to the parent container */
-.gradient-background {
-  background: linear-gradient(to right, #F5F7FA, #ECEFF1);
-  min-height: 100vh;  /* Ensure the gradient fills the whole screen */
-  padding: 20px;
-}
 
-/* Apply gradient background to the v-card */
-.card-gradient {
-  background: linear-gradient(to right, #F5F7FA, #ECEFF1);
-  height: 100%;
-  width: 100%;
-}
-
-/* Customize the chart container */
-.chart-container {
-  position: relative;
-  height: calc(100% - 48px); /* Adjust to leave space for card title */
-  width: 100%;
-  margin: 0 auto;
-}
-
-/* Style for the Add Card button */
-.add-card-btn {
-  background-color: #6200EE; /* Vibrant purple */
-  color: white;
-  border-radius: 24px;
-  padding: 12px 24px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.add-card-btn:hover {
-  background-color: #3700B3; /* Darker shade on hover */
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-}
-
-.add-card-btn:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(98, 0, 238, 0.5);
-}
-/* Typography styles for cards */
-.text-subtitle-1 {
-  font-size: 1.125rem !important; /* 18px */
-  line-height: 1.5 !important;
-}
-
-.text-h2 {
-  font-size: 2rem !important; /* 48px */
-  line-height: 1.2 !important;
-}
-
-/* Adjust padding */
-.pa-6 {
-  padding: 24px !important;
-}
-</style>
