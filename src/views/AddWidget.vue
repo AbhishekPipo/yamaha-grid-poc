@@ -44,7 +44,7 @@
                 ></v-select>
 
                 <v-row class="mt-4">
-                  <v-btn type="submit" color="primary" class="submit-btn">Create</v-btn>
+                  <v-btn type="submit" color="primary" class="submit-btn mr-2">Create</v-btn>
                   <v-btn to="/" color="grey" text class="cancel-btn">Cancel</v-btn>
                 </v-row>
               </v-form>

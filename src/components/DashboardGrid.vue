@@ -1,7 +1,6 @@
 <template>
      <!-- Include the Sidebar component -->
      <DashboardSidebar />
-
      <!-- Include the Header component -->
      <DashboardHeader />
   <DashboardLayoutWrapper>
@@ -15,7 +14,6 @@
           <i class="fas fa-plus mr-2"></i> Add a Card
         </button>
       </div>
-
       <!-- Grid Layout -->
       <grid-layout
         v-model:layout="layout"
@@ -60,7 +58,6 @@
               />
             </div>
           </div>
-
           <!-- Static Cards -->
           <div
             v-else
@@ -74,7 +71,6 @@
     </div>
   </DashboardLayoutWrapper>
 </template>
-
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
@@ -90,7 +86,6 @@ import {
   LinearScale,
   BarElement
 } from 'chart.js';
-
 ChartJS.register(
   Title,
   Tooltip,
@@ -100,19 +95,15 @@ ChartJS.register(
   LinearScale,
   BarElement
 );
-
 const router = useRouter();
 const layout = ref([]);
-
 // Chart component mapping
 const chartComponents = {
   doughnut: Doughnut,
   pie: Pie,
   bar: Bar
 };
-
 const getChartComponent = (type) => chartComponents[type] || Doughnut;
-
 const getCardTitle = (cardId) => {
   const titles = {
     'Card 2': 'All Devices Health',
@@ -123,7 +114,6 @@ const getCardTitle = (cardId) => {
   };
   return titles[cardId] || 'Statistics';
 };
-
 const getCardValue = (cardId) => {
   const values = {
     'Card 2': '6,452',
@@ -134,39 +124,31 @@ const getCardValue = (cardId) => {
   };
   return values[cardId] || '0';
 };
-
 const navigateToAddWidget = () => {
   router.push('/add-widget');
 };
-
 const deleteWidget = (item) => {
   layout.value = layout.value.filter(widget => widget.i !== item.i);
   saveLayout(layout.value);
 };
-
 const saveLayout = (newLayout) => {
   localStorage.setItem('dashboard-grid-layout', JSON.stringify(newLayout));
 };
-
 const loadSavedLayout = () => {
   const savedLayout = localStorage.getItem('dashboard-grid-layout');
   if (savedLayout) {
     layout.value = JSON.parse(savedLayout);
   }
 };
-
 const onLayoutUpdated = (newLayout) => {
   layout.value = newLayout;
 };
-
 const onResizeEnd = (layout) => {
   saveLayout(layout);
 };
-
 const onDragEnd = (layout) => {
   saveLayout(layout);
 };
-
 onMounted(() => {
   loadSavedLayout();
 });
