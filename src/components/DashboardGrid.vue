@@ -1,4 +1,9 @@
 <template>
+     <!-- Include the Sidebar component -->
+     <DashboardSidebar />
+
+     <!-- Include the Header component -->
+     <DashboardHeader />
   <DashboardLayoutWrapper>
     <div class="min-h-screen bg-gradient-to-r from-gray-100 to-gray-200 p-6">
       <!-- Add Card button -->
@@ -21,8 +26,6 @@
         :vertical-compact="true"
         :margin="[16, 16]"
         @layout-updated="onLayoutUpdated"
-        @resize="onResize"
-        @resize-start="onResizeStart"
         @resize-end="onResizeEnd"
         @drag-end="onDragEnd"
       >
@@ -35,65 +38,36 @@
           :w="item.w"
           :h="item.h"
         >
-          <!-- Donut Chart Card -->
+          <!-- Dynamic Chart Card -->
           <div
-            v-if="item.i === 'Card 1'"
+            v-if="item.chartType"
             class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1"
           >
             <div class="flex justify-between items-center mb-4">
-              <h2 class="text-lg font-semibold">Graph</h2>
+              <h2 class="text-lg font-semibold">{{ item.title || 'Chart' }}</h2>
               <button
                 class="text-gray-500 hover:text-red-500"
-                @click="deleteChart(item)"
+                @click="deleteWidget(item)"
               >
                 <i class="fas fa-trash"></i>
               </button>
             </div>
             <div class="relative h-[200px]">
-              <Doughnut :data="chartData" :options="chartOptions" />
+              <component
+                :is="getChartComponent(item.chartType)"
+                :data="item.chartData"
+                :options="item.chartOptions"
+              />
             </div>
           </div>
 
-          <!-- Default Card -->
+          <!-- Static Cards -->
           <div
-          v-if="item.i === 'Card 2'"
-
+            v-else
             class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex flex-col justify-center"
           >
-            <h3 class="text-gray-500 text-lg">All Devices Health</h3>
-            <p class="text-3xl font-bold mt-2">6,452</p>
-          </div>
-          <div
-          v-if="item.i === 'Card 3'"
-
-            class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex flex-col justify-center"
-          >
-            <h3 class="text-gray-500 text-lg">Total Devices Status</h3>
-            <p class="text-3xl font-bold mt-2">42,502</p>
-          </div>
-          <div
-          v-if="item.i === 'Card 4'"
-
-            class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex flex-col justify-center"
-          >
-            <h3 class="text-gray-500 text-lg">Active Projects</h3>
-            <p class="text-3xl font-bold mt-2">56,201</p>
-          </div>
-          <div
-          v-if="item.i === 'Card 5'"
-
-            class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex flex-col justify-center"
-          >
-            <h3 class="text-gray-500 text-lg">Total Users</h3>
-            <p class="text-3xl font-bold mt-2">6,452</p>
-          </div>
-          <div
-          v-if="item.i === 'Card 6'"
-
-            class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex flex-col justify-center"
-          >
-            <h3 class="text-gray-500 text-lg">Total Devices </h3>
-            <p class="text-3xl font-bold mt-2">62,303</p>
+            <h3 class="text-gray-500 text-lg">{{ getCardTitle(item.i) }}</h3>
+            <p class="text-3xl font-bold mt-2">{{ getCardValue(item.i) }}</p>
           </div>
         </grid-item>
       </grid-layout>
@@ -102,10 +76,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { GridLayout, GridItem } from 'vue-grid-layout-v3'
-import DashboardLayoutWrapper from '@/layouts/DashboardLayoutWrapper.vue'
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { GridLayout, GridItem } from 'vue-grid-layout-v3';
+import { Doughnut, Pie, Bar } from 'vue-chartjs';
 import {
   Chart as ChartJS,
   Title,
@@ -113,118 +87,87 @@ import {
   Legend,
   ArcElement,
   CategoryScale,
-} from 'chart.js'
-import { Doughnut } from 'vue-chartjs'
+  LinearScale,
+  BarElement
+} from 'chart.js';
 
-const router = useRouter()
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  BarElement
+);
 
-// Navigation function
+const router = useRouter();
+const layout = ref([]);
+
+// Chart component mapping
+const chartComponents = {
+  doughnut: Doughnut,
+  pie: Pie,
+  bar: Bar
+};
+
+const getChartComponent = (type) => chartComponents[type] || Doughnut;
+
+const getCardTitle = (cardId) => {
+  const titles = {
+    'Card 2': 'All Devices Health',
+    'Card 3': 'Total Devices Status',
+    'Card 4': 'Active Projects',
+    'Card 5': 'Total Users',
+    'Card 6': 'Total Devices'
+  };
+  return titles[cardId] || 'Statistics';
+};
+
+const getCardValue = (cardId) => {
+  const values = {
+    'Card 2': '6,452',
+    'Card 3': '42,502',
+    'Card 4': '56,201',
+    'Card 5': '6,452',
+    'Card 6': '62,303'
+  };
+  return values[cardId] || '0';
+};
+
 const navigateToAddWidget = () => {
-  router.push('/add-widget')
-}
+  router.push('/add-widget');
+};
 
-ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale)
+const deleteWidget = (item) => {
+  layout.value = layout.value.filter(widget => widget.i !== item.i);
+  saveLayout(layout.value);
+};
 
-const STORAGE_KEY = 'dashboard-grid-layout'
-const isResizing = ref(false)
-const isDragging = ref(false)
+const saveLayout = (newLayout) => {
+  localStorage.setItem('dashboard-grid-layout', JSON.stringify(newLayout));
+};
 
-// Chart configuration
-const chartData = {
-  labels: ['Value A', 'Value B', 'Value C'],
-  datasets: [
-    {
-      data: [20, 60, 20],
-      backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-      borderWidth: 0,
-    },
-  ],
-}
+const loadSavedLayout = () => {
+  const savedLayout = localStorage.getItem('dashboard-grid-layout');
+  if (savedLayout) {
+    layout.value = JSON.parse(savedLayout);
+  }
+};
 
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  cutout: '70%',
-  plugins: {
-    legend: {
-      position: 'bottom',
-      labels: {
-        boxWidth: 10,
-        padding: 20,
-      },
-    },
-    tooltip: {
-      callbacks: {
-        label: (context) => `${context.label}: ${context.raw}%`,
-      },
-    },
-  },
-}
+const onLayoutUpdated = (newLayout) => {
+  layout.value = newLayout;
+};
 
-const defaultLayout = [
-  { i: 'Card 1',  x: 0, y: 0, w: 4, h: 4 },
-  { i: 'Card 2', x: 4, y: 0, w: 4, h: 2 },
-  { i: 'Card 3', x: 8, y: 0, w: 4, h: 2 },
-  { i: 'Card 4', x: 0, y: 4, w: 6, h: 2 },
-  { i: 'Card 5', x: 6, y: 4, w: 6, h: 2 },
-  { i: 'Card 6', x: 0, y: 6, w: 4, h: 2 }  // Added new card
+const onResizeEnd = (layout) => {
+  saveLayout(layout);
+};
 
-]
-
-const layout = ref(defaultLayout)
-
-// Delete chart function
-const deleteChart = (item) => {
-  layout.value = layout.value.filter((layoutItem) => layoutItem.i !== item.i)
-  saveLayout(layout.value)
-}
-
-watch(
-  layout,
-  (newLayout) => {
-    if (!isResizing.value && !isDragging.value) {
-      saveLayout(newLayout)
-    }
-  },
-  { deep: true }
-)
+const onDragEnd = (layout) => {
+  saveLayout(layout);
+};
 
 onMounted(() => {
-  loadSavedLayout()
-})
-
-function saveLayout(newLayout) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(newLayout))
-}
-
-function loadSavedLayout() {
-  const savedLayout = localStorage.getItem(STORAGE_KEY)
-  if (savedLayout) {
-    layout.value = JSON.parse(savedLayout)
-  }
-}
-
-function onLayoutUpdated(newLayout) {
-  if (!isResizing.value && !isDragging.value) {
-    layout.value = newLayout
-  }
-}
-
-function onResizeStart() {
-  isResizing.value = true
-}
-
-function onResizeEnd(layout) {
-  isResizing.value = false
-  saveLayout(layout)
-}
-
-function onDragEnd(layout) {
-  isDragging.value = false
-  saveLayout(layout)
-}
+  loadSavedLayout();
+});
 </script>
-
-<style scoped>
-/* Tailwind CSS classes are used for styling */
-</style>
