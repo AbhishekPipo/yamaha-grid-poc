@@ -140,10 +140,10 @@ const navigateToAddWidget = () => {
   router.push('/add-widget');
 };
 
-const editWidget = (item) => {
-  localStorage.setItem('editing-widget', JSON.stringify(item));
-  router.push('/edit-widget');
-};
+// const editWidget = (item) => {
+//   localStorage.setItem('editing-widget', JSON.stringify(item));
+//   router.push('/edit-widget');
+// };
 
 const deleteWidget = (item) => {
   layout.value = layout.value.filter(widget => widget.i !== item.i);
