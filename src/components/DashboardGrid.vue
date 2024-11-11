@@ -62,8 +62,8 @@
           </v-card>
           <!-- Default Card -->
           <v-card v-else class="h-full card-gradient">
-            <v-card-title>{{ item.i }}</v-card-title>
-            <v-card-text>Content for {{ item.i }}</v-card-text>
+            <v-card-title class="text-subtitle-1 text-grey-darken-1 font-weight-normal">{{ item.i }}</v-card-title>
+            <v-card-text class="text-h2 mt-2 font-weight-normal">Content for {{ item.i }}</v-card-text>
           </v-card>
         </grid-item>
       </grid-layout>
@@ -279,5 +279,20 @@ function onDragEnd(layout) {
 .add-card-btn:focus {
   outline: none;
   box-shadow: 0 0 0 2px rgba(98, 0, 238, 0.5);
+}
+/* Typography styles for cards */
+.text-subtitle-1 {
+  font-size: 1.125rem !important; /* 18px */
+  line-height: 1.5 !important;
+}
+
+.text-h2 {
+  font-size: 2rem !important; /* 48px */
+  line-height: 1.2 !important;
+}
+
+/* Adjust padding */
+.pa-6 {
+  padding: 24px !important;
 }
 </style>
