@@ -227,13 +227,13 @@ onMounted(() => {
   <DashboardSidebar />
   <DashboardHeader />
   <DashboardLayoutWrapper>
-    <div class="min-h-screen bg-gradient-to-r from-gray-100 to-gray-200 p-6">
-      <div class="flex justify-end mb-6">
+    <div class="tw-min-h-screen tw-bg-gradient-to-r tw-from-gray-100 tw-to-gray-200 tw-p-6">
+      <div class="tw-flex tw-justify-end tw-mb-6">
         <button
-          class="bg-indigo-600 text-white rounded-lg py-2 px-6 shadow-lg hover:bg-indigo-700 transition-all"
+          class="tw-bg-indigo-600 tw-text-white tw-rounded-lg tw-py-2 tw-px-6 tw-shadow-lg hover:tw-bg-indigo-700 tw-transition-all"
           @click="navigateToAddWidget"
         >
-          <i class="fas fa-plus mr-2"></i> Add a Card
+          <i class="fas fa-plus tw-mr-2"></i> Add a Card
         </button>
       </div>
 
@@ -264,31 +264,25 @@ onMounted(() => {
           <!-- Dynamic Chart Card -->
           <div
             v-if="item.chartType"
-            class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1"
+            class="tw-h-full tw-p-4 tw-bg-white tw-rounded-xl tw-shadow-lg tw-transition-transform hover:tw-translate-y-1"
           >
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-lg font-semibold text-gray-800">{{ item.title || 'Chart' }}</h2>
-              <div class="flex items-center space-x-2">
-                <!-- <button
-                  class="text-gray-500 hover:text-blue-500 transition-colors"
-                  @click="editWidget(item)"
-                >
-                  <i class="fas fa-edit"></i>
-                </button> -->
+            <div class="tw-flex tw-justify-between tw-items-center tw-mb-4">
+              <h2 class="tw-text-lg tw-font-semibold tw-text-gray-800">{{ item.title || 'Chart' }}</h2>
+              <div class="tw-flex tw-items-center tw-space-x-2">
                 <button
-                  class="text-gray-500 hover:text-red-500 transition-colors"
+                  class="tw-text-gray-500 hover:tw-text-red-500 tw-transition-colors"
                   @click="deleteWidget(item)"
                 >
                   <i class="fas fa-trash"></i>
                 </button>
               </div>
             </div>
-            <div class="relative h-[calc(100%-3rem)]">
+            <div class="tw-relative tw-h-[calc(100%-3rem)]">
               <component
                 :is="getChartComponent(item.chartType)"
                 :data="item.chartData"
                 :options="getChartOptions(item)"
-                class="h-full w-full"
+                class="tw-h-full tw-w-full"
               />
             </div>
           </div>
@@ -296,24 +290,24 @@ onMounted(() => {
           <!-- Static Cards -->
           <div
             v-else
-            class="h-full p-4 bg-white rounded-xl shadow-lg transition-transform transform hover:-translate-y-1"
+            class="tw-h-full tw-p-4 tw-bg-white tw-rounded-xl tw-shadow-lg tw-transition-transform hover:tw-translate-y-1"
           >
-            <div class="flex justify-between items-center h-full">
-              <div class="flex flex-col justify-between py-2">
+            <div class="tw-flex tw-justify-between tw-items-center tw-h-full">
+              <div class="tw-flex tw-flex-col tw-justify-between tw-py-2">
                 <div>
-                  <h3 class="text-gray-500 text-lg font-medium">{{ getCardTitle(item.i) }}</h3>
-                  <p class="text-3xl font-bold text-gray-800 mt-2">{{ getCardValue(item.i) }}</p>
+                  <h3 class="tw-text-gray-500 tw-text-lg tw-font-medium">{{ getCardTitle(item.i) }}</h3>
+                  <p class="tw-text-3xl tw-font-bold tw-text-gray-800 tw-mt-2">{{ getCardValue(item.i) }}</p>
                 </div>
-                <div class="flex items-center mt-4">
-                  <span class="text-green-500 text-sm">
-                    <i class="fas fa-arrow-up mr-1"></i>4.75%
+                <div class="tw-flex tw-items-center tw-mt-4">
+                  <span class="tw-text-green-500 tw-text-sm">
+                    <i class="fas fa-arrow-up tw-mr-1"></i>4.75%
                   </span>
-                  <span class="text-gray-400 text-sm ml-1">vs last week</span>
+                  <span class="tw-text-gray-400 tw-text-sm tw-ml-1">vs last week</span>
                 </div>
               </div>
-              <div class="flex items-center">
-                <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                  <i :class="getCardIcon(item.i)" class="text-indigo-600 text-xl"></i>
+              <div class="tw-flex tw-items-center">
+                <div class="tw-w-12 tw-h-12 tw-rounded-full tw-bg-indigo-100 tw-flex tw-items-center tw-justify-center">
+                  <i :class="getCardIcon(item.i)" class="tw-text-indigo-600 tw-text-xl"></i>
                 </div>
               </div>
             </div>
@@ -350,7 +344,7 @@ onMounted(() => {
   height: 100%;
 }
 
-.hover\:-translate-y-1:hover {
+.hover\:tw-translate-y-1:hover {
   transition: transform 0.2s ease-in-out;
 }
 
