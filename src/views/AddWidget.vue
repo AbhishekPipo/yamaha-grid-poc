@@ -1,3 +1,4 @@
+<!-- addwidget.vue -->
 <template>
   <v-app>
     <DashboardSidebar />
@@ -17,6 +18,8 @@
                   outlined
                   placeholder="Enter Widget Title"
                   class="input-field"
+                  :rules="[v => !!v || 'Title is required']"
+                  required
                 ></v-text-field>
 
                 <v-select
@@ -25,6 +28,8 @@
                   label="Widget Type"
                   outlined
                   class="select-field"
+                  :rules="[v => !!v || 'Widget type is required']"
+                  required
                 ></v-select>
 
                 <v-select
@@ -33,6 +38,8 @@
                   label="Data Set"
                   outlined
                   class="select-field"
+                  :rules="[v => !!v || 'Data set is required']"
+                  required
                 ></v-select>
 
                 <v-select
@@ -41,10 +48,19 @@
                   label="Dimension"
                   outlined
                   class="select-field"
+                  :rules="[v => !!v || 'Dimension is required']"
+                  required
                 ></v-select>
 
                 <v-row class="mt-4">
-                  <v-btn type="submit" color="primary" class="submit-btn mr-2">Create</v-btn>
+                  <v-btn
+                    type="submit"
+                    color="primary"
+                    class="submit-btn mr-2"
+                    :disabled="!isFormValid"
+                  >
+                    Create
+                  </v-btn>
                   <v-btn to="/" color="grey" text class="cancel-btn">Cancel</v-btn>
                 </v-row>
               </v-form>
@@ -62,6 +78,9 @@
                   :data="chartData"
                   :options="chartOptions"
                 />
+                <div v-else class="preview-placeholder">
+                  Select widget type and data set to see preview
+                </div>
               </div>
             </v-card>
           </v-col>
@@ -112,9 +131,16 @@ export default {
 
     const formData = ref({
       title: '',
-      widgetType: 'doughnut',
+      widgetType: '',
       dataPair: '',
       dimension: ''
+    });
+
+    const isFormValid = computed(() => {
+      return formData.value.title &&
+             formData.value.widgetType &&
+             formData.value.dataPair &&
+             formData.value.dimension;
     });
 
     const generateChartData = (dataType, chartType) => {
@@ -218,46 +244,21 @@ export default {
       formData.value.widgetType && formData.value.dataPair
     );
 
-    // Calculate the position for the new widget
     const calculateNewWidgetPosition = (existingLayout) => {
-      const GRID_COLUMNS = 12; // Total number of columns in the grid
-      const WIDGET_WIDTH = 4;  // Default widget width
-      // const WIDGET_HEIGHT = 4; // Default widget height
-
       if (!existingLayout.length) {
         return { x: 0, y: 0 };
       }
 
-      // Find the highest y-coordinate and its row
+      // Find the highest y-coordinate
       let maxY = 0;
-      let lastRowItems = [];
-
       existingLayout.forEach(item => {
         const itemBottom = item.y + item.h;
-        if (itemBottom >= maxY) {
-          if (itemBottom > maxY) {
-            maxY = itemBottom;
-            lastRowItems = [];
-          }
-          lastRowItems.push(item);
+        if (itemBottom > maxY) {
+          maxY = itemBottom;
         }
       });
 
-      // Sort last row items by x position
-      lastRowItems.sort((a, b) => a.x - b.x);
-
-      // Find the last item in the row
-      const lastItem = lastRowItems[lastRowItems.length - 1];
-
-      // If there's space in the current row
-      if (lastItem && (lastItem.x + lastItem.w + WIDGET_WIDTH) <= GRID_COLUMNS) {
-        return {
-          x: lastItem.x + lastItem.w,
-          y: lastItem.y
-        };
-      }
-
-      // If no space in current row, start a new row
+      // Place the new widget at the start of a new row below all existing widgets
       return {
         x: 0,
         y: maxY
@@ -265,6 +266,10 @@ export default {
     };
 
     const submitForm = () => {
+      if (!isFormValid.value) {
+        return;
+      }
+
       const widgetId = `Card ${Date.now()}`;
       const existingLayout = JSON.parse(localStorage.getItem('dashboard-grid-layout') || '[]');
 
@@ -298,7 +303,8 @@ export default {
       chartOptions,
       showPreviewChart,
       submitForm,
-      selectedChartComponent
+      selectedChartComponent,
+      isFormValid
     };
   }
 };
@@ -308,5 +314,35 @@ export default {
 .chart-container {
   height: 300px;
   position: relative;
+}
+
+.preview-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-style: italic;
+}
+
+.form-card, .preview-card {
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.form-card:hover, .preview-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.input-field, .select-field {
+  margin-bottom: 1rem;
+}
+
+.submit-btn {
+  min-width: 120px;
+}
+
+.cancel-btn {
+  min-width: 100px;
 }
 </style>
