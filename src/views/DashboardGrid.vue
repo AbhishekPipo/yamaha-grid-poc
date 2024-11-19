@@ -2,6 +2,7 @@
 import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { GridLayout, GridItem } from 'vue-grid-layout-v3';
+import DashboardLayoutWrapper from '@/layouts/DashboardLayoutWrapper.vue';
 import {
   Chart as ChartJS,
   Title,
@@ -224,8 +225,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <DashboardSidebar />
-  <DashboardHeader />
+  
   <DashboardLayoutWrapper>
     <div class="tw-min-h-screen tw-bg-gradient-to-r tw-from-gray-100 tw-to-gray-200 tw-p-6">
       <div class="tw-flex tw-justify-end tw-mb-6">

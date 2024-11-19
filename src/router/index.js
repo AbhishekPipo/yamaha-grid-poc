@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import DashboardGrid from '@/components/DashboardGrid.vue'
+import DashboardGrid from '@/views/DashboardGrid.vue'
 import AddWidget from '@/views/AddWidget.vue'
 
 const routes = [
