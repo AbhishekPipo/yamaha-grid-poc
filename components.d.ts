@@ -14,6 +14,7 @@ declare module 'vue' {
     DashboardSidebar: typeof import('./src/components/DashboardSidebar.vue')['default']
     DonutChartCard: typeof import('./src/components/DonutChartCard.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
+    MyComponent: typeof import('./src/components/MyComponent.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

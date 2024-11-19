@@ -1,4 +1,3 @@
-// Plugins
 import Components from 'unplugin-vue-components/vite'
 import Vue from '@vitejs/plugin-vue'
 import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
@@ -10,7 +9,6 @@ import commonjs from 'vite-plugin-commonjs'
 import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     VueRouter(),
@@ -22,7 +20,6 @@ export default defineConfig({
       styles: {
         configFile: 'src/styles/settings.scss',
       },
-      // Define light mode as the default theme
       theme: {
         defaultTheme: 'light',
         themes: {
@@ -77,6 +74,14 @@ export default defineConfig({
       scss: {
         additionalData: `@import "@/styles/variables.scss";`,
       },
+    },
+  },
+  test: {
+    globals: true,  // Make global test functions like `describe`, `it`, and `expect` available
+    environment: 'jsdom',  // Use jsdom environment (required for DOM manipulation in Vue)
+    setupFiles: './vitest.setup.ts',  // Optional setup file for global configuration
+    coverage: {
+      provider: 'c8',  // Coverage provider (optional)
     },
   },
 })
